@@ -1,0 +1,13 @@
+{
+  "allowed": ["MIT", "ISC", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "0BSD", "BlueOak-1.0.0"],
+  "packages": {
+    "@resvg/resvg-js": "MPL-2.0",
+    "@resvg/resvg-js-linux-x64-gnu": "MPL-2.0",
+    "lightningcss": "MPL-2.0",
+    "lightningcss-linux-x64-gnu": "MPL-2.0",
+    "caniuse-lite": "CC-BY-4.0",
+    "spdx-exceptions": "CC-BY-3.0",
+    "spdx-license-ids": "CC0-1.0",
+    "spdx-ranges": "(MIT AND CC-BY-3.0)"
+  }
+}

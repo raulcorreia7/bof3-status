@@ -45,7 +45,7 @@ npm run build    # site/ plus the pictures
 npm test         # model totals, from data/report.json
 npm run lint     # tsc
 npm run format   # dprint: ts, tsx, json and md
-npm run licenses # dependency license gate; reviewed exceptions live in package.json
+npm run licenses # dependency license gate; reviewed exceptions live in licenses.json
 ```
 
 `make check` runs the format check, `npm run lint`, `npm run licenses` and `npm test`; `make help`
