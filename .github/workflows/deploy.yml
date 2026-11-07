@@ -9,16 +9,38 @@ on:
     paths-ignore: ["**.md", "docs/**"]
   pull_request:
   workflow_dispatch:
-  # Backstop: redeploy every 30 minutes so the page never lags the progress release.
+  # Backstop: check hourly whether the progress release is newer than the page; the `fresh` job
+  # ends the run when the published report is the one already deployed.
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "17 * * * *"
 permissions:
   contents: read
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  fresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+    steps:
+      - id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          changed=true
+          if [ "$GITHUB_EVENT_NAME" = schedule ] &&
+            gh release download progress -R "$GITHUB_REPOSITORY" -p report.json -O release.json &&
+            curl -fsS "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/report.json" -o deployed.json &&
+            cmp -s release.json deployed.json; then
+            changed=false
+            echo "The deployed report is the published one; nothing to do"
+          fi
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
   build:
+    needs: fresh
+    if: needs.fresh.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
