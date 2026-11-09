@@ -3,24 +3,12 @@
 Issues and pull requests are welcome. All contributions follow the
 [code of conduct](CODE_OF_CONDUCT.md). Ask questions in
 [Discussions](https://github.com/raulcorreia7/bof3-status/discussions). `AGENTS.md` is optional
-guidance for coding agents; people can ignore it.
+guidance for coding agents.
 
 ## Set up
 
-You need Git, Node.js 22 or later and, for formatting, the standalone
-[dprint](https://github.com/dprint/dprint/releases/latest) executable.
-
-```sh
-git clone https://github.com/raulcorreia7/bof3-status.git
-cd bof3-status
-npm ci
-npm run dev    # dev server on the published report
-```
-
-## Checks
-
-`make check` runs the format check, the type check, the license gate and the tests. CI runs the same
-checks and builds the site.
+Install the tools in the README [requirements](README.md#requirements), then follow
+[set up](README.md#set-up) and [run](README.md#run).
 
 ## What to change
 
@@ -34,8 +22,13 @@ No game data belongs in the repository.
 
 ## Submit a change
 
-Create a branch and keep each change focused. Use commit subjects such as
-`fix(page): label the match bar`. Describe the behavior and the checks in the pull request.
+1. Create a branch and keep the change focused.
+2. Run the gate: `make check` (format check, type check, license gate, tests). CI runs the same
+   checks and builds the site.
+3. Write the commit subject as `type(scope): subject`, for example `fix(page): label the match bar`.
+4. Open a pull request. Describe the behavior and the checks you ran.
+
+Writing rules: the [project standard](https://github.com/raulcorreia7/bof3/blob/main/docs/standard.md#writing).
 
 ## License
 

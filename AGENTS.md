@@ -1,7 +1,7 @@
 # Agent guide
 
 bof3-status is the progress site of the *Breath of Fire III* decompilation: a Vite and Solid page
-over the decompilation's objdiff report. Read [README.md](README.md) first, then
+over the decompilation's objdiff report. Read [README.md](README.md) first (requirements, set up, build, run, check), then
 [docs/site.md](docs/site.md).
 
 ## Where things are
