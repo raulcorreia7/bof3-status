@@ -29,7 +29,7 @@ const luminance = (fill: string): number => {
 /** Black or white, whichever has the higher contrast against `fill`. */
 const readableOn = (fill: string): string => (luminance(fill) > 0.179 ? "#000000" : "#ffffff");
 
-export type MapRef = { kind: "home" | "part" | "image" | "fn" | "sdk"; id: string };
+export type MapRef = { kind: "home" | "part" | "image" | "fn" | "sdk"; id: string; f?: string };
 
 export interface MapNode {
   id: string;
@@ -58,7 +58,7 @@ const fnNode = (fn: Fn, tokens: Tokens): MapNode => ({
   id: `f:${fn.id}`,
   name: fn.name,
   value: Math.max(fn.bytes, MIN_WEIGHT),
-  ref: { kind: "fn", id: fn.unit },
+  ref: { kind: "fn", id: fn.unit, f: fn.id },
   tip: fnTip(fn),
   itemStyle: { color: tokens.status[fn.status] },
   label: { color: readableOn(tokens.status[fn.status]) },
@@ -76,7 +76,7 @@ const sdkNode = (fn: Fn, tokens: Tokens): MapNode => ({
   id: `f:${fn.id}`,
   name: fn.member || fn.name,
   value: Math.max(fn.bytes, MIN_WEIGHT),
-  ref: { kind: "fn", id: fn.unit },
+  ref: { kind: "fn", id: fn.unit, f: fn.id },
   tip: sdkTip(fn),
   itemStyle: { color: tokens.sdk },
   label: { show: true, color: readableOn(tokens.sdk) },

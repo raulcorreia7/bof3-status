@@ -11,7 +11,7 @@ export function Inspector(props: { data: Accessor<Views["inspector"]> }) {
   let panel: HTMLElement | undefined;
   let opener: Element | null = null;
   const [copied, setCopied] = createSignal(false);
-  const close = () => page.go({ fn: null });
+  const close = () => page.go({ fn: null, f: null }, true);
 
   // Move focus into the panel when it opens and give it back when it closes.
   createEffect(
@@ -70,22 +70,38 @@ export function Inspector(props: { data: Accessor<Views["inspector"]> }) {
             </div>
           </div>
           <Show when={data().message}>{(message) => <p class="my-2">{message()}</p>}</Show>
+          <Show when={data().selected}>
+            {(selected) => (
+              <section class="mt-3 border-t border-line pt-3" aria-label={INSPECT.function}>
+                <h3 class="text-sm font-semibold">{INSPECT.function}</h3>
+                <Fields fields={selected().fields} />
+              </section>
+            )}
+          </Show>
           <Show when={data().fields.length}>
-            <dl class="my-3 grid grid-cols-[7.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
-              <For each={data().fields}>
-                {(field) => (
-                  <>
-                    <dt class="text-mute">{field.label}</dt>
-                    <dd class="min-w-0 break-words">
-                      <Parts parts={field.value} />
-                    </dd>
-                  </>
-                )}
-              </For>
-            </dl>
+            <Fields fields={data().fields} />
           </Show>
         </aside>
       )}
     </Show>
+  );
+}
+
+type Field = NonNullable<Views["inspector"]>["fields"][number];
+
+function Fields(props: { fields: Field[] }) {
+  return (
+    <dl class="my-3 grid grid-cols-[7.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
+      <For each={props.fields}>
+        {(field) => (
+          <>
+            <dt class="text-mute">{field.label}</dt>
+            <dd class="min-w-0 break-words">
+              <Parts parts={field.value} />
+            </dd>
+          </>
+        )}
+      </For>
+    </dl>
   );
 }

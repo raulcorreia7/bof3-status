@@ -128,6 +128,7 @@ const gameMapRoute = (
 ): Partial<Route> => ({
   view,
   fn: null,
+  f: null,
   q: "",
   sort: "address",
   dir: "asc",
@@ -269,16 +270,38 @@ export function gamePage({ model, route, tokens }: Ctx): GamePage | null {
 
 // Search -------------------------------------------------------------------------
 
-export const search = (): Views["filters"] => ({
+export const search = ({ model }: Ctx): Views["filters"] => ({
   search: {
     label: BROWSER.searchLabel,
     hint: BROWSER.hint,
     placeholder: BROWSER.searchPlaceholder,
   },
+  statuses: [
+    { value: "", label: BROWSER.filters.allStatuses },
+    ...(["pure", "nonmatching", "open"] as const).map((key) => ({
+      value: key,
+      label: STATUS[key].label,
+    })),
+  ],
+  parts: [
+    { value: "", label: BROWSER.filters.allParts },
+    ...model.groups.filter((group) => group.code.functions).map((group) => ({
+      value: group.key,
+      label: group.label,
+    })),
+  ],
+  images: [
+    { value: "", label: BROWSER.filters.allImages },
+    ...model.targets
+      .filter((target) => target.code.functions)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((target) => ({ value: target.id, label: target.name })),
+  ],
 });
 
 export function searchTable({ model, route, limit }: Ctx): Views["table"] {
-  const found = route.q ? browse(model, route) : [];
+  const active = !!(route.q || route.st || route.part || route.image);
+  const found = active ? browse(model, route) : [];
   return {
     columns: [
       { label: BROWSER.columns.function, sort: "name" },
@@ -290,7 +313,7 @@ export function searchTable({ model, route, limit }: Ctx): Views["table"] {
     rows: found.slice(0, limit).map((fn) => ({
       id: fn.unit,
       cells: [
-        [{ text: fn.name, to: { fn: fn.unit } }],
+        [{ text: fn.name, to: { fn: fn.unit, f: fn.id } }],
         [{ text: "", status: fn.status }],
         [{ text: bytes(fn.bytes) }],
         [{
@@ -300,7 +323,7 @@ export function searchTable({ model, route, limit }: Ctx): Views["table"] {
         [{ text: fn.addr || "-", code: true }],
       ],
     })),
-    message: !route.q
+    message: !active
       ? ""
       : !found.length
       ? BROWSER.none
