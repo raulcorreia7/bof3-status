@@ -99,7 +99,7 @@ function Images(props: { data: Accessor<GamePage>; tree: Accessor<MapNode> }) {
             {(image) => (
               <li>
                 <Jump
-                  to={{ view: { kind: "image", id: image.id }, fn: null }}
+                  to={{ view: { kind: "image", id: image.id }, fn: null, f: null }}
                   class="block rounded border border-line px-2 py-1.5 text-ink hover:border-accent hover:no-underline"
                 >
                   {image.name} ·{" "}
@@ -140,7 +140,7 @@ function Functions(props: { data: Accessor<GamePage>; tree: Accessor<MapNode> })
               {(fn) => (
                 <li>
                   <Jump
-                    to={{ fn: fn.unit }}
+                    to={{ fn: fn.unit, f: fn.id }}
                     class={`block rounded border px-2 py-1.5 text-ink hover:border-accent hover:no-underline ${
                       page.route.fn === fn.unit ? "border-accent bg-track" : "border-line bg-card"
                     }`}
@@ -198,8 +198,10 @@ function Canvas(props: { tree: Accessor<MapNode>; label: string }) {
   });
   const onClick = (params: ChartClick) => {
     const ref = params.data?.ref as MapRef | undefined;
-    if (ref?.kind === "fn") page.go({ fn: ref.id });
-    else if (ref?.kind === "image") page.go({ view: { kind: "image", id: ref.id }, fn: null });
+    if (ref?.kind === "fn") page.go({ fn: ref.id, f: ref.f ?? null });
+    else if (ref?.kind === "image") {
+      page.go({ view: { kind: "image", id: ref.id }, fn: null, f: null });
+    }
   };
   return (
     <Chart

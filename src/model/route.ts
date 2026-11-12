@@ -20,6 +20,8 @@ export interface Route {
   view: View;
   /** The unit (source file) open in the side panel, by its objdiff name. */
   fn: string | null;
+  /** The function selected in that unit, by its model id; null for the file as a whole. */
+  f: string | null;
   /** Search words. */
   q: string;
   /** Status filter: empty for all, else a game status key. */
@@ -35,6 +37,7 @@ export interface Route {
 export const HOME: Route = {
   view: { kind: "home" },
   fn: null,
+  f: null,
   q: "",
   st: "",
   part: "",
@@ -82,6 +85,7 @@ export function parseHash(hash: string): Route {
   return {
     view,
     fn: kind === "fn" && id ? id : params.get("fn"),
+    f: params.get("f"),
     q: params.get("q") ?? "",
     st: params.get("st") ?? "",
     part: params.get("part") ?? "",
@@ -104,6 +108,7 @@ export function formatHash(route: Route): string {
   // On the home page an open function is the path, as links have always been.
   const path = page || (route.fn ? `fn/${encodeURIComponent(route.fn)}` : "");
   if (page && route.fn) params.set("fn", route.fn);
+  if (route.fn && route.f) params.set("f", route.f);
   if (route.q) params.set("q", route.q);
   if (route.st) params.set("st", route.st);
   if (route.part) params.set("part", route.part);
