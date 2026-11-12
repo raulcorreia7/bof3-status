@@ -57,40 +57,50 @@ function Layout() {
       requestAnimationFrame(() => scrollToSection(id, false));
     }
   });
+  // The skip link moves focus to the page content without changing the route: a plain #content
+  // navigation would be read as the home page by the hash router.
+  const skipToContent = (event: MouseEvent) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    event.preventDefault();
+    document.getElementById("content")?.focus();
+  };
   return (
     <>
       <a
         class="absolute top-0 -left-250 z-30 bg-card px-3 py-2 focus:top-2 focus:left-2"
         href="#content"
+        onClick={skipToContent}
       >
         {HEAD.skip}
       </a>
       <div class="flex items-start">
-        <main
-          id="content"
-          tabIndex={-1}
-          class={`mx-auto max-w-5xl min-w-0 flex-1 px-4 pt-5 pb-16 focus:outline-none ${
+        <div
+          class={`mx-auto max-w-5xl min-w-0 flex-1 px-4 pt-5 pb-16 ${
             inspectorOpen() ? "max-xl:pb-[64vh]" : ""
           }`}
         >
           <Header />
-          <Show when={gamePageData()} fallback={<Sections />}>
-            {(data) => <GamePageView data={data} />}
-          </Show>
-          <footer class="mt-10 border-t border-line pt-4 text-sm text-mute">
-            <p>{FOOT.text}</p>
-            <nav class="mt-2 flex flex-wrap gap-x-4 gap-y-1" aria-label={FOOT.linksLabel}>
-              <For each={FOOT.links}>
-                {(l) => (
-                  <a class="text-ink hover:underline" href={l.href}>
-                    {l.label}
-                  </a>
-                )}
-              </For>
-            </nav>
-            <p class="mt-2">{FOOT.notice}</p>
-          </footer>
-        </main>
+          <main id="content" tabIndex={-1} class="min-w-0 focus:outline-none">
+            <Show when={gamePageData()} fallback={<Sections />}>
+              {(data) => <GamePageView data={data} />}
+            </Show>
+            <footer class="mt-10 border-t border-line pt-4 text-sm text-mute">
+              <p>{FOOT.text}</p>
+              <nav class="mt-2 flex flex-wrap gap-x-4 gap-y-1" aria-label={FOOT.linksLabel}>
+                <For each={FOOT.links}>
+                  {(l) => (
+                    <a class="text-ink hover:underline" href={l.href}>
+                      {l.label}
+                    </a>
+                  )}
+                </For>
+              </nav>
+              <p class="mt-2">{FOOT.notice}</p>
+            </footer>
+          </main>
+        </div>
         <Inspector data={inspectorData} />
       </div>
     </>
