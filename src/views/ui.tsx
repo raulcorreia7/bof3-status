@@ -78,7 +78,7 @@ export function Jump(
   return (
     <a
       class={props.class}
-      href={page.href(props.to) === "#" && props.scroll ? `#${props.scroll}` : page.href(props.to)}
+      href={page.href(props.to, props.scroll)}
       title={props.title}
       aria-label={props["aria-label"]}
       aria-current={props["aria-current"] ? "true" : undefined}

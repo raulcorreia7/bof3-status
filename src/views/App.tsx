@@ -4,7 +4,7 @@ import { createMemo, createSignal, For, type JSX, onMount, Show } from "solid-js
 import { type MapRef, overviewTree, treemapOption } from "../charts/treemap.ts";
 import { inspector } from "../inspect.ts";
 import { sourceLine } from "../model/format.ts";
-import { HOME } from "../model/route.ts";
+import { HOME, sectionOfHash } from "../model/route.ts";
 import {
   apart,
   domains,
@@ -50,12 +50,10 @@ function Layout() {
   const gamePageData = createMemo(() => gamePage(page));
   const inspectorOpen = () => !!page.route.fn;
   const inspectorData = createMemo(() => inspector(page));
-  // A link to a section (#map, #find) opens the home page at that section.
+  // A section hash, or a search query, opens the home page at that view.
   onMount(() => {
-    const id = window.location.hash.slice(1);
-    if (NAV.some((section) => section.id === id) || id === "parts" || id === "sdk") {
-      requestAnimationFrame(() => scrollToSection(id, false));
-    }
+    const section = sectionOfHash(window.location.hash) ?? (page.route.q ? "find" : null);
+    if (section) requestAnimationFrame(() => scrollToSection(section, false));
   });
   return (
     <>
