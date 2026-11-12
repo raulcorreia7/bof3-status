@@ -22,6 +22,8 @@ export interface Route {
   fn: string | null;
   /** Search words. */
   q: string;
+  /** The home map: parts of the game or the images. */
+  by: "part" | "image";
   sort: SortKey;
   dir: "asc" | "desc";
 }
@@ -30,6 +32,7 @@ export const HOME: Route = {
   view: { kind: "home" },
   fn: null,
   q: "",
+  by: "part",
   sort: "address",
   dir: "asc",
 };
@@ -74,6 +77,7 @@ export function parseHash(hash: string): Route {
     view,
     fn: kind === "fn" && id ? id : params.get("fn"),
     q: params.get("q") ?? "",
+    by: params.get("by") === "image" ? "image" : "part",
     sort: oneOf(SORTS, params.get("sort"), HOME.sort),
     dir: params.get("dir") === "desc" ? "desc" : "asc",
   };
@@ -93,6 +97,7 @@ export function formatHash(route: Route): string {
   const path = page || (route.fn ? `fn/${encodeURIComponent(route.fn)}` : "");
   if (page && route.fn) params.set("fn", route.fn);
   if (route.q) params.set("q", route.q);
+  if (route.by !== HOME.by) params.set("by", route.by);
   if (route.sort !== HOME.sort) params.set("sort", route.sort);
   if (route.dir !== HOME.dir) params.set("dir", route.dir);
   const query = params.toString();

@@ -1,6 +1,6 @@
 // The page: the header, then the home page sections or one part or image page.
 
-import { createMemo, createSignal, For, type JSX, onMount, Show } from "solid-js";
+import { createMemo, For, type JSX, onMount, Show } from "solid-js";
 import { type MapRef, overviewTree, treemapOption } from "../charts/treemap.ts";
 import { inspector } from "../inspect.ts";
 import { sourceLine } from "../model/format.ts";
@@ -188,13 +188,12 @@ function Sections() {
 
 function HomeMap() {
   const page = usePage();
-  const [by, setBy] = createSignal<"part" | "image">("part");
   const option = createMemo(() =>
     treemapOption(
       overviewTree(
         page.model,
         page.tokens,
-        by(),
+        page.route.by,
         Math.min(window.innerWidth - 32, 992),
         window.innerWidth < 700 ? 800 : 540,
       ),
@@ -213,16 +212,16 @@ function HomeMap() {
         <button
           type="button"
           class="btn"
-          aria-pressed={by() === "part"}
-          onClick={() => setBy("part")}
+          aria-pressed={page.route.by === "part"}
+          onClick={() => page.go({ by: "part" }, true)}
         >
           By game part
         </button>
         <button
           type="button"
           class="btn"
-          aria-pressed={by() === "image"}
-          onClick={() => setBy("image")}
+          aria-pressed={page.route.by === "image"}
+          onClick={() => page.go({ by: "image" }, true)}
         >
           By image
         </button>
