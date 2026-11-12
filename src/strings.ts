@@ -52,6 +52,7 @@ export const SITE = {
 
 export const HEAD = {
   title: "Breath of Fire III decompilation",
+  region: "US release (SLUS_004.22)",
   documentTitle: (view: string | null) =>
     view
       ? `${view} · Breath of Fire III decompilation status`
@@ -82,6 +83,8 @@ export const SUMMARY = {
 export const MAP = {
   heading: "Parts of the game",
   help: "Select a part or image to explore its functions.",
+  imageNote:
+    "An image is one game executable or one overlay file; slot N is its place in the EMI archive.",
   detailsHeading: "Explore the parts",
   shading: "Block size: code bytes · Shade: percentage rebuilt in C by code size",
   homeChartLabel: "Treemap of game parts and images, with linked PsyQ SDK code",
