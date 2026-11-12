@@ -179,11 +179,13 @@ export const BROWSER = {
 
 export const INSPECT = {
   kind: "File",
+  function: "Function",
   close: "Close",
   copyLink: "Copy link",
   copied: "Link copied",
   match: (matched: number, total: number) => `${number(matched)} of ${number(total)} match`,
   fields: {
+    name: "Name",
     address: "Address",
     ends: "Ends at",
     size: "Size",

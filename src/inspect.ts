@@ -4,7 +4,7 @@ import { bytes, hex } from "./model/format.ts";
 import { findUnit, neighbours } from "./model/index.ts";
 import { ASSEMBLY_LIBRARY } from "./model/report.ts";
 import { INSPECT, SDK } from "./strings.ts";
-import type { Model, Unit } from "./types.ts";
+import type { Fn, Model, Unit } from "./types.ts";
 import type { Ctx, Part, Views } from "./viewtypes.ts";
 
 const F = INSPECT.fields;
@@ -20,7 +20,7 @@ function unitFields(model: Model, unit: Unit): Field[] {
   const around = (other: Unit | null): Part[] =>
     other
       ? [
-        text(other.name, { to: { fn: other.id } }),
+        text(other.name, { to: { fn: other.id, f: null } }),
         text(` ${other.addr}`, { code: true, mute: true }),
       ]
       : [text("-", { mute: true })];
@@ -64,10 +64,32 @@ function unitFields(model: Model, unit: Unit): Field[] {
   return fields;
 }
 
+function functionFields(fn: Fn): Field[] {
+  return [
+    field(F.name, text(fn.name, { code: true })),
+    field(F.address, fn.addr ? text(fn.addr, { code: true }) : text("-", { mute: true })),
+    field(F.size, text(bytes(fn.bytes))),
+    field(F.status, text("", { status: fn.status })),
+    field(
+      F.fuzzy,
+      text(
+        fn.fuzzyReported ? `${fn.fuzzy.toFixed(1)}%` : "-",
+        fn.fuzzyReported ? {} : { mute: true },
+      ),
+    ),
+  ];
+}
+
 export function inspector({ model, route }: Ctx): Views["inspector"] {
   if (!route.fn) return null;
   const unit = findUnit(model, route.fn);
-  return unit
-    ? { title: unit.id, fields: unitFields(model, unit) }
-    : { title: route.fn, fields: [], message: INSPECT.notFound };
+  if (!unit) return { title: route.fn, fields: [], message: INSPECT.notFound };
+  const selected = unit.functions.length > 1
+    ? unit.functions.find((fn) => fn.id === route.f)
+    : undefined;
+  return {
+    title: unit.id,
+    fields: unitFields(model, unit),
+    selected: selected ? { fields: functionFields(selected) } : undefined,
+  };
 }

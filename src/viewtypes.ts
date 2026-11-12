@@ -91,7 +91,15 @@ export interface Views {
     /** More rows can be shown. */
     more?: string;
   };
-  inspector: { title: string; fields: { label: string; value: Part[] }[]; message?: string } | null;
+  inspector:
+    | {
+      title: string;
+      fields: { label: string; value: Part[] }[];
+      /** The selected function, when the file holds several. */
+      selected?: { fields: { label: string; value: Part[] }[] };
+      message?: string;
+    }
+    | null;
 }
 
 /** A part of the game or an image page: its counts, then its functions as a treemap and a list. */
