@@ -153,6 +153,14 @@ export const BROWSER = {
   hint: "Searches game functions by name, address or status.",
   searchPlaceholder: "Name, address or status",
   searchLabel: "Search game functions",
+  filters: {
+    status: "Status",
+    part: "Part of the game",
+    image: "Image",
+    allStatuses: "All statuses",
+    allParts: "All parts",
+    allImages: "All images",
+  },
   columns: {
     function: "Function",
     status: "Status",
@@ -160,7 +168,7 @@ export const BROWSER = {
     target: "Image",
     address: "Address",
   },
-  none: "No function matches. Try fewer words.",
+  none: "No function matches. Try fewer words or other filters.",
   limited: (shown: number, total: number) =>
     `Showing ${number(shown)} of ${plural(total, "function")}.`,
   shown: (count: number) => `${plural(count, "function")}.`,

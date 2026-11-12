@@ -124,7 +124,9 @@ export function createPage(model: Model): Page {
   };
 
   // Search table: rows shown, back to one step when the search changes -------------------
-  const filterKey = createMemo(() => [route.q, route.sort, route.dir].join("|"));
+  const filterKey = createMemo(() =>
+    [route.q, route.st, route.part, route.image, route.sort, route.dir].join("|")
+  );
   const [limit, setLimit] = createSignal(PAGE_STEP);
   createEffect(on(filterKey, () => setLimit(PAGE_STEP), { defer: true }));
 

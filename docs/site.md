@@ -34,7 +34,7 @@ Navigation has one model. The route names a page (home, a part of the game, or a
 | Change wording                    | `src/strings.ts`, one name per thing: a status, a part of the game, an image and a measure keep the same words in every card, key, list and tooltip.                                                                                                                                             |
 | Change the data shape             | The schema in `src/model/schema.ts` and the adapter in `src/model/report.ts`; then publish a matching `data/report.json`.                                                                                                                                                                        |
 
-Links look like `#fn/exe%2Fslus_004_22%2Ffunc_80164028` (a source file, by its URL-encoded unit name, on the home page), `#image/emi%2Fworld00%2Farea037%2F13` (an image page; `?fn=` opens a file beside it), `#part/battle` (a part page) and `#map` (a home page section). Old `#target/...` and `#group/...` links redirect to `#image/...` and `#part/...`. The function list's query parameters are `q`, `st`, `part`, `lib`, `t`, `sort` and `dir`.
+Links look like `#fn/exe%2Fslus_004_22%2Ffunc_80164028` (a source file, by its URL-encoded unit name, on the home page), `#image/emi%2Fworld00%2Farea037%2F13` (an image page; `?fn=` opens a file beside it), `#part/battle` (a part page) and `#map` (a home page section). Old `#target/...` and `#group/...` links redirect to `#image/...` and `#part/...`. The function list's query parameters are `q`, `st`, `part`, `image`, `sort` and `dir`; the search covers game functions, so it has no library or tier filter.
 
 ## File layout
 
