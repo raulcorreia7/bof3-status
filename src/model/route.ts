@@ -24,6 +24,8 @@ export interface Route {
   f: string | null;
   /** Search words. */
   q: string;
+  /** The home map: parts of the game or the images. */
+  by: "part" | "image";
   /** Status filter: empty for all, else a game status key. */
   st: string;
   /** Part of the game filter: empty for all, else a group key. */
@@ -39,6 +41,7 @@ export const HOME: Route = {
   fn: null,
   f: null,
   q: "",
+  by: "part",
   st: "",
   part: "",
   image: "",
@@ -87,6 +90,7 @@ export function parseHash(hash: string): Route {
     fn: kind === "fn" && id ? id : params.get("fn"),
     f: params.get("f"),
     q: params.get("q") ?? "",
+    by: params.get("by") === "image" ? "image" : "part",
     st: params.get("st") ?? "",
     part: params.get("part") ?? "",
     image: params.get("image") ?? "",
@@ -110,6 +114,7 @@ export function formatHash(route: Route): string {
   if (page && route.fn) params.set("fn", route.fn);
   if (route.fn && route.f) params.set("f", route.f);
   if (route.q) params.set("q", route.q);
+  if (route.by !== HOME.by) params.set("by", route.by);
   if (route.st) params.set("st", route.st);
   if (route.part) params.set("part", route.part);
   if (route.image) params.set("image", route.image);
