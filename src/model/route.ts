@@ -20,10 +20,18 @@ export interface Route {
   view: View;
   /** The unit (source file) open in the side panel, by its objdiff name. */
   fn: string | null;
+  /** The function selected in that unit, by its model id; null for the file as a whole. */
+  f: string | null;
   /** Search words. */
   q: string;
   /** The home map: parts of the game or the images. */
   by: "part" | "image";
+  /** Status filter: empty for all, else a game status key. */
+  st: string;
+  /** Part of the game filter: empty for all, else a group key. */
+  part: string;
+  /** Image filter: empty for all, else a target id. */
+  image: string;
   sort: SortKey;
   dir: "asc" | "desc";
 }
@@ -31,8 +39,12 @@ export interface Route {
 export const HOME: Route = {
   view: { kind: "home" },
   fn: null,
+  f: null,
   q: "",
   by: "part",
+  st: "",
+  part: "",
+  image: "",
   sort: "address",
   dir: "asc",
 };
@@ -76,8 +88,12 @@ export function parseHash(hash: string): Route {
   return {
     view,
     fn: kind === "fn" && id ? id : params.get("fn"),
+    f: params.get("f"),
     q: params.get("q") ?? "",
     by: params.get("by") === "image" ? "image" : "part",
+    st: params.get("st") ?? "",
+    part: params.get("part") ?? "",
+    image: params.get("image") ?? "",
     sort: oneOf(SORTS, params.get("sort"), HOME.sort),
     dir: params.get("dir") === "desc" ? "desc" : "asc",
   };
@@ -96,8 +112,12 @@ export function formatHash(route: Route): string {
   // On the home page an open function is the path, as links have always been.
   const path = page || (route.fn ? `fn/${encodeURIComponent(route.fn)}` : "");
   if (page && route.fn) params.set("fn", route.fn);
+  if (route.fn && route.f) params.set("f", route.f);
   if (route.q) params.set("q", route.q);
   if (route.by !== HOME.by) params.set("by", route.by);
+  if (route.st) params.set("st", route.st);
+  if (route.part) params.set("part", route.part);
+  if (route.image) params.set("image", route.image);
   if (route.sort !== HOME.sort) params.set("sort", route.sort);
   if (route.dir !== HOME.dir) params.set("dir", route.dir);
   const query = params.toString();

@@ -12,7 +12,7 @@ import type { ChartOption } from "./register.ts";
 /** A zero-byte function keeps one byte of area, so it stays in the map. */
 const MIN_WEIGHT = 1;
 
-export type MapRef = { kind: "home" | "part" | "image" | "fn" | "sdk"; id: string };
+export type MapRef = { kind: "home" | "part" | "image" | "fn" | "sdk"; id: string; f?: string };
 
 export interface MapNode {
   id: string;
@@ -41,7 +41,7 @@ const fnNode = (fn: Fn, tokens: Tokens): MapNode => ({
   id: `f:${fn.id}`,
   name: fn.name,
   value: Math.max(fn.bytes, MIN_WEIGHT),
-  ref: { kind: "fn", id: fn.unit },
+  ref: { kind: "fn", id: fn.unit, f: fn.id },
   tip: fnTip(fn),
   itemStyle: { color: tokens.status[fn.status] },
 });
@@ -58,7 +58,7 @@ const sdkNode = (fn: Fn, tokens: Tokens): MapNode => ({
   id: `f:${fn.id}`,
   name: fn.member || fn.name,
   value: Math.max(fn.bytes, MIN_WEIGHT),
-  ref: { kind: "fn", id: fn.unit },
+  ref: { kind: "fn", id: fn.unit, f: fn.id },
   tip: sdkTip(fn),
   itemStyle: { color: tokens.sdk },
   label: { show: true },
