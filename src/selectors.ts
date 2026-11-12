@@ -128,6 +128,7 @@ const gameMapRoute = (
 ): Partial<Route> => ({
   view,
   fn: null,
+  f: null,
   q: "",
   sort: "address",
   dir: "asc",
@@ -290,7 +291,7 @@ export function searchTable({ model, route, limit }: Ctx): Views["table"] {
     rows: found.slice(0, limit).map((fn) => ({
       id: fn.unit,
       cells: [
-        [{ text: fn.name, to: { fn: fn.unit } }],
+        [{ text: fn.name, to: { fn: fn.unit, f: fn.id } }],
         [{ text: "", status: fn.status }],
         [{ text: bytes(fn.bytes) }],
         [{

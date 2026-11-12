@@ -20,6 +20,8 @@ export interface Route {
   view: View;
   /** The unit (source file) open in the side panel, by its objdiff name. */
   fn: string | null;
+  /** The function selected in that unit, by its model id; null for the file as a whole. */
+  f: string | null;
   /** Search words. */
   q: string;
   sort: SortKey;
@@ -29,6 +31,7 @@ export interface Route {
 export const HOME: Route = {
   view: { kind: "home" },
   fn: null,
+  f: null,
   q: "",
   sort: "address",
   dir: "asc",
@@ -54,6 +57,7 @@ export function parseHash(hash: string): Route {
   return {
     view,
     fn: kind === "fn" && id ? id : params.get("fn"),
+    f: params.get("f"),
     q: params.get("q") ?? "",
     sort: oneOf(SORTS, params.get("sort"), HOME.sort),
     dir: params.get("dir") === "desc" ? "desc" : "asc",
@@ -73,6 +77,7 @@ export function formatHash(route: Route): string {
   // On the home page an open function is the path, as links have always been.
   const path = page || (route.fn ? `fn/${encodeURIComponent(route.fn)}` : "");
   if (page && route.fn) params.set("fn", route.fn);
+  if (route.fn && route.f) params.set("f", route.f);
   if (route.q) params.set("q", route.q);
   if (route.sort !== HOME.sort) params.set("sort", route.sort);
   if (route.dir !== HOME.dir) params.set("dir", route.dir);

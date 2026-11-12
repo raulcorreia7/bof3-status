@@ -195,9 +195,10 @@ function HomeMap() {
   );
   const onClick = (params: ChartClick) => {
     const ref = params.data?.ref as MapRef | undefined;
-    if (ref?.kind === "part") page.go({ view: { kind: "part", key: ref.id }, fn: null });
-    else if (ref?.kind === "image") page.go({ view: { kind: "image", id: ref.id }, fn: null });
-    else if (ref?.kind === "sdk") page.go({ view: HOME.view }, false, "sdk");
+    if (ref?.kind === "part") page.go({ view: { kind: "part", key: ref.id }, fn: null, f: null });
+    else if (ref?.kind === "image") {
+      page.go({ view: { kind: "image", id: ref.id }, fn: null, f: null });
+    } else if (ref?.kind === "sdk") page.go({ view: HOME.view }, false, "sdk");
   };
   return (
     <>
