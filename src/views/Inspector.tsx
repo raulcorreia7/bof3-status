@@ -11,7 +11,7 @@ export function Inspector(props: { data: Accessor<Views["inspector"]> }) {
   let panel: HTMLElement | undefined;
   let opener: Element | null = null;
   const [copied, setCopied] = createSignal(false);
-  const close = () => page.go({ fn: null });
+  const close = () => page.go({ fn: null }, true);
 
   // Move focus into the panel when it opens and give it back when it closes.
   createEffect(
