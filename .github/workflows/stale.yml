@@ -1,0 +1,66 @@
+name: stale
+
+# A guard on the progress release. The deploy workflow publishes whatever bof3-decomp uploaded, so
+# a report nobody uploaded leaves the page showing old numbers while every deploy run is green.
+# This opens an issue while the released report is more than a day old and bof3-decomp main has
+# moved on, keeps that one issue up to date, and closes it when the report is current again.
+on:
+  schedule:
+    - cron: "43 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Compare the released report with bof3-decomp main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          work=$(mktemp -d)
+          trap 'rm -rf "$work"' EXIT
+          published=
+          commit=
+          if gh release download progress -R "$GITHUB_REPOSITORY" -p report.json -O "$work/report.json" 2>/dev/null; then
+            published=$(jq -r '.source.published // empty' "$work/report.json")
+            commit=$(jq -r '.source.commit // empty' "$work/report.json")
+          fi
+          main=$(gh api repos/raulcorreia7/bof3-decomp/commits/main --jq .sha)
+          hours=999999
+          if [ -n "$published" ]; then
+            hours=$(( ($(date -u +%s) - $(date -u -d "$published" +%s)) / 3600 ))
+          fi
+          stale=false
+          if [ "$commit" != "$main" ] && [ "$hours" -ge 24 ]; then stale=true; fi
+          echo "report ${commit:-none}, main $main, ${hours}h old, stale=$stale"
+          title="The progress report is stale"
+          open=$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "$title in:title" \
+            --json number --jq '.[0].number // empty')
+          body=$(printf '%s\n' \
+            "The page shows commit \`${commit:-none}\`, published ${published:-never}; bof3-decomp \`main\` is at \`$main\`." \
+            "" \
+            "Publishing needs a passing byte check on decomp main: read \`state/verify-main.log\` and the end of \`build/report.log\` in the verify-main worktree. To publish the current main once the report builds:" \
+            "" \
+            '```sh' \
+            'FORCE=1 sh pipeline/status-publish.sh ~/projects/bof3/.worktrees/verify-main' \
+            '```' \
+            "" \
+            "This issue closes itself when the released report matches decomp main.")
+          if $stale; then
+            if [ -n "$open" ]; then
+              gh issue edit "$open" -R "$GITHUB_REPOSITORY" --body "$body"
+            else
+              gh issue create -R "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" -R "$GITHUB_REPOSITORY" \
+              --comment "The released report matches bof3-decomp main at \`$main\`."
+          fi
