@@ -13,6 +13,7 @@ const SEARCH_PAUSE_MS = 150;
 type Props<K extends keyof Views> = { data: Accessor<Views[K]> };
 
 const input = "rounded-md border border-line bg-card px-2.5 py-1.5 text-ink";
+const select = "rounded-md border border-line bg-card px-2 py-1.5 text-sm text-ink";
 
 export function Cards(props: Props<"cards">) {
   return (
@@ -81,15 +82,53 @@ export function Filters(props: Props<"filters">) {
   return (
     <div class="mt-1">
       <p class="mb-2 text-sm text-mute">{props.data().search.hint}</p>
-      <input
-        type="search"
-        class={`${input} w-full max-w-90`}
-        placeholder={props.data().search.placeholder}
-        aria-label={props.data().search.label}
-        autocomplete="off"
-        value={page.route.q}
-        onInput={(event) => search(event.currentTarget.value)}
-      />
+      <div class="flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          class={`${input} w-full max-w-90`}
+          placeholder={props.data().search.placeholder}
+          aria-label={props.data().search.label}
+          autocomplete="off"
+          value={page.route.q}
+          onInput={(event) => search(event.currentTarget.value)}
+        />
+        <label class="flex items-center gap-1.5 text-sm">
+          <span class="text-mute">{BROWSER.filters.status}</span>
+          <select
+            class={select}
+            value={page.route.st}
+            onChange={(event) => page.go({ st: event.currentTarget.value }, true)}
+          >
+            <For each={props.data().statuses}>
+              {(option) => <option value={option.value}>{option.label}</option>}
+            </For>
+          </select>
+        </label>
+        <label class="flex items-center gap-1.5 text-sm">
+          <span class="text-mute">{BROWSER.filters.part}</span>
+          <select
+            class={select}
+            value={page.route.part}
+            onChange={(event) => page.go({ part: event.currentTarget.value }, true)}
+          >
+            <For each={props.data().parts}>
+              {(option) => <option value={option.value}>{option.label}</option>}
+            </For>
+          </select>
+        </label>
+        <label class="flex items-center gap-1.5 text-sm">
+          <span class="text-mute">{BROWSER.filters.image}</span>
+          <select
+            class={select}
+            value={page.route.image}
+            onChange={(event) => page.go({ image: event.currentTarget.value }, true)}
+          >
+            <For each={props.data().images}>
+              {(option) => <option value={option.value}>{option.label}</option>}
+            </For>
+          </select>
+        </label>
+      </div>
     </div>
   );
 }

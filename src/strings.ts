@@ -42,10 +42,12 @@ export const GROUP_NOTE: Record<string, string> = {
 };
 
 export const SITE = {
-  loadFailed: (message: string) => `The status data could not be loaded (${message}).`,
+  loadFailedTitle: "The status data could not be loaded",
+  loadFailedDetail: (message: string) => `The report could not be read (${message}).`,
   loadFailedReload: "Reload the page",
   loadFailedOpen: " or open ",
   loadFailedEnd: " directly.",
+  loadFailedPicture: "The same picture is available as ",
 };
 
 export const HEAD = {
@@ -155,6 +157,14 @@ export const BROWSER = {
   hint: "Searches game functions by name, address or status.",
   searchPlaceholder: "Name, address or status",
   searchLabel: "Search game functions",
+  filters: {
+    status: "Status",
+    part: "Part of the game",
+    image: "Image",
+    allStatuses: "All statuses",
+    allParts: "All parts",
+    allImages: "All images",
+  },
   columns: {
     function: "Function",
     status: "Status",
@@ -162,7 +172,7 @@ export const BROWSER = {
     target: "Image",
     address: "Address",
   },
-  none: "No function matches. Try fewer words.",
+  none: "No function matches. Try fewer words or other filters.",
   limited: (shown: number, total: number) =>
     `Showing ${number(shown)} of ${plural(total, "function")}.`,
   shown: (count: number) => `${plural(count, "function")}.`,
@@ -173,11 +183,13 @@ export const BROWSER = {
 
 export const INSPECT = {
   kind: "File",
+  function: "Function",
   close: "Close",
   copyLink: "Copy link",
   copied: "Link copied",
   match: (matched: number, total: number) => `${number(matched)} of ${number(total)} match`,
   fields: {
+    name: "Name",
     address: "Address",
     ends: "Ends at",
     size: "Size",
