@@ -154,6 +154,16 @@ function Sections() {
   return (
     <>
       <Section id="map" title={MAP.heading}>
+        <p class="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-sm">
+          <For each={cards().cards}>
+            {(card) => (
+              <span>
+                <span class="text-mute">{card.title}</span>{" "}
+                <b class="text-xl tabular-nums" style={{ color: card.color }}>{card.big}</b>
+              </span>
+            )}
+          </For>
+        </p>
         <p class="my-1 text-sm text-mute">
           {MAP.help} <Jump to={{ view: HOME.view }} scroll="parts">{MAP.detailsHeading}</Jump>.
         </p>
