@@ -42,10 +42,12 @@ export const GROUP_NOTE: Record<string, string> = {
 };
 
 export const SITE = {
-  loadFailed: (message: string) => `The status data could not be loaded (${message}).`,
+  loadFailedTitle: "The status data could not be loaded",
+  loadFailedDetail: (message: string) => `The report could not be read (${message}).`,
   loadFailedReload: "Reload the page",
   loadFailedOpen: " or open ",
   loadFailedEnd: " directly.",
+  loadFailedPicture: "The same picture is available as ",
 };
 
 export const HEAD = {

@@ -20,7 +20,10 @@
 <link rel="icon" href="data:,">
 </head>
 <body>
-<div id="page"><noscript>This page needs JavaScript to draw the charts. The same picture is available as <a href="progress.png">progress.png</a>.</noscript></div>
+<div id="page">
+  <p id="loading" style="max-width: 64rem; margin: 0 auto; padding: 1.25rem 1rem; font: 16px/1.5 -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">Loading the progress report...</p>
+  <noscript><style>#loading { display: none; }</style>This page needs JavaScript to draw the charts. The same picture is available as <a href="progress.png">progress.png</a>.</noscript>
+</div>
 <script type="module" src="./src/main.tsx"></script>
 </body>
 </html>
