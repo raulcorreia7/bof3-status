@@ -50,6 +50,10 @@ export const SITE = {
 
 export const HEAD = {
   title: "Breath of Fire III decompilation",
+  documentTitle: (view: string | null) =>
+    view
+      ? `${view} · Breath of Fire III decompilation status`
+      : "Breath of Fire III decompilation status",
   skip: "Skip to the content",
   sections: "Sections",
   getThe: "Get the",
