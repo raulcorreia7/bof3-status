@@ -47,6 +47,25 @@ const SORTS: SortKey[] = ["address", "size", "name", "status"];
 const oneOf = <T extends string>(options: readonly T[], value: string | null, fallback: T): T =>
   options.find((option) => option === value) ?? fallback;
 
+/** The home-page sections a link can open. */
+export const SECTION_IDS = ["map", "overview", "find", "method", "parts", "sdk"] as const;
+export type SectionId = (typeof SECTION_IDS)[number];
+export const isSectionId = (value: string): value is SectionId =>
+  SECTION_IDS.some((id) => id === value);
+
+/** The section a hash points at, ignoring any query it carries. */
+export function sectionOfHash(hash: string): SectionId | null {
+  const [path = ""] = hash.replace(/^#/, "").split("?");
+  return isSectionId(path) ? path : null;
+}
+
+/** The hash of a home-page section, carrying the route's search parameters. */
+export function sectionHash(route: Route, section: string): string {
+  const rest = formatHash({ ...route, view: HOME.view, fn: null });
+  const query = rest.includes("?") ? rest.slice(rest.indexOf("?")) : "";
+  return `#${section}${query}`;
+}
+
 /** A path that older pages wrote; parseHash reads it, formatHash never writes it. */
 export const isLegacyPath = (hash: string): boolean => /^#(target|group)\//.test(hash);
 

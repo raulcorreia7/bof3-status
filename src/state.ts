@@ -12,7 +12,15 @@ import {
 } from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import { PAGE_STEP } from "./model/browse.ts";
-import { formatHash, isLegacyPath, pagePath, parseHash, type Route } from "./model/route.ts";
+import {
+  formatHash,
+  isLegacyPath,
+  pagePath,
+  parseHash,
+  type Route,
+  sectionHash,
+  sectionOfHash,
+} from "./model/route.ts";
 import { applyMode, type Mode, saveMode, storedMode, watchSystemScheme } from "./theme/apply.ts";
 import type { Scheme, Tokens } from "./theme/tokens.ts";
 import type { Model } from "./types.ts";
@@ -28,7 +36,7 @@ type Navigate = (patch: Partial<Route>, replace?: boolean, section?: string) => 
 interface Page extends Ctx {
   go: Navigate;
   /** The hash of the current route with `patch` applied, for a link's href. */
-  href: (patch: Partial<Route>) => string;
+  href: (patch: Partial<Route>, section?: string) => string;
   scheme: Scheme;
   mode: Mode;
   setMode: (mode: Mode) => void;
@@ -59,7 +67,13 @@ export function createPage(model: Model): Page {
     return next;
   };
   const [route, setRoute] = createStore<Route>(routeFromLocation());
-  const sync = () => setRoute(reconcile(routeFromLocation()));
+  const sync = () => {
+    const next = routeFromLocation();
+    setRoute(reconcile(next));
+    // A section hash or a search query restores the reader's place after Back or Forward.
+    const section = sectionOfHash(window.location.hash) ?? (next.q ? "find" : null);
+    if (section) requestAnimationFrame(() => scrollToSection(section, false));
+  };
   window.addEventListener("hashchange", sync);
   window.addEventListener("popstate", sync);
   onCleanup(() => {
@@ -72,9 +86,13 @@ export function createPage(model: Model): Page {
     // A copy: the store adopts the objects it is given and later changes them in place, so a
     // shared constant such as HOME.view must never reach it.
     const next = structuredClone({ ...current, ...patch });
+    // A section is a home page view; opening one closes the file panel, which is another page state.
+    if (section && next.view.kind === "home") next.fn = null;
     const newPage = pagePath(next.view) !== pagePath(current.view);
-    const hash = formatHash(next);
-    if (hash !== formatHash(current)) {
+    const hash = section && next.view.kind === "home"
+      ? sectionHash(next, section)
+      : formatHash(next);
+    if (hash !== window.location.hash) {
       const url = hash || `${window.location.pathname}${window.location.search}`;
       if (replace) window.history.replaceState(null, "", url);
       else window.history.pushState(null, "", url);
@@ -84,7 +102,13 @@ export function createPage(model: Model): Page {
     if (section) requestAnimationFrame(() => scrollToSection(section));
     else if (newPage) requestAnimationFrame(() => window.scrollTo(0, 0));
   };
-  const href = (patch: Partial<Route>) => formatHash({ ...route, ...patch }) || "#";
+  const href = (patch: Partial<Route>, section?: string) => {
+    const next = { ...route, ...patch };
+    const hash = section && next.view.kind === "home"
+      ? sectionHash(next, section)
+      : formatHash(next);
+    return hash || "#";
+  };
 
   // Theme ---------------------------------------------------------------------------------
   const [mode, setModeSignal] = createSignal<Mode>(storedMode());
