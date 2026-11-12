@@ -177,6 +177,7 @@ function buildFunction(
   };
   result.key = [
     result.id,
+    result.addr,
     fn.name,
     status,
     STATUS[status].label,
