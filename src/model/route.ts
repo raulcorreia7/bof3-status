@@ -24,6 +24,12 @@ export interface Route {
   f: string | null;
   /** Search words. */
   q: string;
+  /** Status filter: empty for all, else a game status key. */
+  st: string;
+  /** Part of the game filter: empty for all, else a group key. */
+  part: string;
+  /** Image filter: empty for all, else a target id. */
+  image: string;
   sort: SortKey;
   dir: "asc" | "desc";
 }
@@ -33,6 +39,9 @@ export const HOME: Route = {
   fn: null,
   f: null,
   q: "",
+  st: "",
+  part: "",
+  image: "",
   sort: "address",
   dir: "asc",
 };
@@ -78,6 +87,9 @@ export function parseHash(hash: string): Route {
     fn: kind === "fn" && id ? id : params.get("fn"),
     f: params.get("f"),
     q: params.get("q") ?? "",
+    st: params.get("st") ?? "",
+    part: params.get("part") ?? "",
+    image: params.get("image") ?? "",
     sort: oneOf(SORTS, params.get("sort"), HOME.sort),
     dir: params.get("dir") === "desc" ? "desc" : "asc",
   };
@@ -98,6 +110,9 @@ export function formatHash(route: Route): string {
   if (page && route.fn) params.set("fn", route.fn);
   if (route.fn && route.f) params.set("f", route.f);
   if (route.q) params.set("q", route.q);
+  if (route.st) params.set("st", route.st);
+  if (route.part) params.set("part", route.part);
+  if (route.image) params.set("image", route.image);
   if (route.sort !== HOME.sort) params.set("sort", route.sort);
   if (route.dir !== HOME.dir) params.set("dir", route.dir);
   const query = params.toString();

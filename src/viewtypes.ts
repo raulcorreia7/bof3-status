@@ -77,7 +77,12 @@ export interface Views {
       }[];
     }[];
   };
-  filters: { search: { label: string; hint: string; placeholder: string } };
+  filters: {
+    search: { label: string; hint: string; placeholder: string };
+    statuses: { value: string; label: string }[];
+    parts: { value: string; label: string }[];
+    images: { value: string; label: string }[];
+  };
   table: {
     columns: { label: string; align?: "r"; sort?: SortKey }[];
     rows: { id: string; cells: Part[][] }[];
