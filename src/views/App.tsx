@@ -139,7 +139,7 @@ function Sections() {
   const page = usePage();
   const cards = createMemo(() => overviewCards(page));
   const meters = createMemo(() => overviewMeter(page));
-  const filters = createMemo(() => search());
+  const filters = createMemo(() => search(page));
   const table = createMemo(() => searchTable(page));
   const map = createMemo(() => domains(page));
   const sdk = createMemo(() => apart(page));
