@@ -1,6 +1,6 @@
 // The page: the header, then the home page sections or one part or image page.
 
-import { createMemo, createSignal, For, type JSX, onMount, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, For, type JSX, onMount, Show } from "solid-js";
 import { type MapRef, overviewTree, treemapOption } from "../charts/treemap.ts";
 import { inspector } from "../inspect.ts";
 import { sourceLine } from "../model/format.ts";
@@ -32,6 +32,8 @@ const NAV = [
   { id: "overview", title: SUMMARY.overviewHeading },
   { id: "find", title: BROWSER.heading },
   { id: "method", title: METHOD.heading },
+  { id: "parts", title: MAP.detailsHeading },
+  { id: "sdk", title: SDK.heading },
 ];
 
 const NEXT: Record<Mode, Mode> = { auto: "light", light: "dark", dark: "auto" };
@@ -48,6 +50,11 @@ export function App(props: { model: Model }) {
 function Layout() {
   const page = usePage();
   const gamePageData = createMemo(() => gamePage(page));
+  createEffect(() => {
+    document.title = HEAD.documentTitle(
+      gamePageData()?.title ?? (page.route.q ? BROWSER.heading : null),
+    );
+  });
   const inspectorOpen = () => !!page.route.fn;
   const inspectorData = createMemo(() => inspector(page));
   // A section hash, or a search query, opens the home page at that view.
@@ -147,7 +154,7 @@ function Sections() {
   const page = usePage();
   const cards = createMemo(() => overviewCards(page));
   const meters = createMemo(() => overviewMeter(page));
-  const filters = createMemo(() => search());
+  const filters = createMemo(() => search(page));
   const table = createMemo(() => searchTable(page));
   const map = createMemo(() => domains(page));
   const sdk = createMemo(() => apart(page));
@@ -213,9 +220,10 @@ function HomeMap() {
   );
   const onClick = (params: ChartClick) => {
     const ref = params.data?.ref as MapRef | undefined;
-    if (ref?.kind === "part") page.go({ view: { kind: "part", key: ref.id }, fn: null });
-    else if (ref?.kind === "image") page.go({ view: { kind: "image", id: ref.id }, fn: null });
-    else if (ref?.kind === "sdk") page.go({ view: HOME.view }, false, "sdk");
+    if (ref?.kind === "part") page.go({ view: { kind: "part", key: ref.id }, fn: null, f: null });
+    else if (ref?.kind === "image") {
+      page.go({ view: { kind: "image", id: ref.id }, fn: null, f: null });
+    } else if (ref?.kind === "sdk") page.go({ view: HOME.view }, false, "sdk");
   };
   return (
     <>
