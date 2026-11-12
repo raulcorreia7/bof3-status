@@ -13,14 +13,22 @@ const words = (query: string): string[] => query.toLowerCase().split(/\s+/).filt
 export function browse(model: Model, route: Route): Fn[] {
   const needed = words(route.q);
   const targetOrder = new Map(model.targets.map((target, index) => [target.id, index]));
-  const found = model.functions.filter(
-    (fn) => fn.kind === "game" && needed.every((word) => fn.key.includes(word)),
+  const found = model.functions.filter((fn) =>
+    fn.kind === "game"
+    && (!route.st || fn.status === route.st)
+    && (!route.part || model.targetById.get(fn.target)?.group === route.part)
+    && (!route.image || fn.target === route.image)
+    && needed.every((word) => fn.key.includes(word))
   );
-  const byAddress = (a: Fn, b: Fn) =>
+  const byImage = (a: Fn, b: Fn) =>
     (targetOrder.get(a.target) ?? 0) - (targetOrder.get(b.target) ?? 0)
-    || (a.address === null ? 1 : b.address === null ? -1 : a.address - b.address)
     || a.unit.localeCompare(b.unit)
     || a.offset - b.offset;
+  const byAddress = (a: Fn, b: Fn) => {
+    if (a.address === null) return b.address === null ? byImage(a, b) : 1;
+    if (b.address === null) return -1;
+    return a.address - b.address || byImage(a, b);
+  };
   const compare: Record<Route["sort"], (a: Fn, b: Fn) => number> = {
     address: byAddress,
     size: (a, b) => a.bytes - b.bytes || byAddress(a, b),

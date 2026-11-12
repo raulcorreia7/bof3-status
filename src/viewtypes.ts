@@ -77,7 +77,12 @@ export interface Views {
       }[];
     }[];
   };
-  filters: { search: { label: string; hint: string; placeholder: string } };
+  filters: {
+    search: { label: string; hint: string; placeholder: string };
+    statuses: { value: string; label: string }[];
+    parts: { value: string; label: string }[];
+    images: { value: string; label: string }[];
+  };
   table: {
     columns: { label: string; align?: "r"; sort?: SortKey }[];
     rows: { id: string; cells: Part[][] }[];
@@ -86,7 +91,15 @@ export interface Views {
     /** More rows can be shown. */
     more?: string;
   };
-  inspector: { title: string; fields: { label: string; value: Part[] }[]; message?: string } | null;
+  inspector:
+    | {
+      title: string;
+      fields: { label: string; value: Part[] }[];
+      /** The selected function, when the file holds several. */
+      selected?: { fields: { label: string; value: Part[] }[] };
+      message?: string;
+    }
+    | null;
 }
 
 /** A part of the game or an image page: its counts, then its functions as a treemap and a list. */
