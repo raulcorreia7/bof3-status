@@ -119,6 +119,7 @@ function Header() {
           {HEAD.theme[page.mode]}
         </button>
       </div>
+      <p class="mt-1 text-sm text-mute">{HEAD.region}</p>
       <nav class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label={HEAD.sections}>
         <For each={NAV}>
           {(section) => (
@@ -157,6 +158,7 @@ function Sections() {
         <p class="my-1 text-sm text-mute">
           {MAP.help} <Jump to={{ view: HOME.view }} scroll="parts">{MAP.detailsHeading}</Jump>.
         </p>
+        <p class="text-sm text-mute">{MAP.imageNote}</p>
         <HomeMap />
       </Section>
       <Section id="overview" title={SUMMARY.overviewHeading}>
