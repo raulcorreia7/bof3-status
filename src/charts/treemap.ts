@@ -12,6 +12,23 @@ import type { ChartOption } from "./register.ts";
 /** A zero-byte function keeps one byte of area, so it stays in the map. */
 const MIN_WEIGHT = 1;
 
+/**
+ * The WCAG relative luminance of a `#rrggbb` fill. Black and white text have equal contrast
+ * where the fill's luminance is 0.179, so that crossover chooses the label colour.
+ */
+const luminance = (fill: string): number => {
+  const hex = fill.replace(/^#/, "");
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return 1;
+  const channel = (offset: number) => {
+    const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+};
+
+/** Black or white, whichever has the higher contrast against `fill`. */
+const readableOn = (fill: string): string => (luminance(fill) > 0.179 ? "#000000" : "#ffffff");
+
 export type MapRef = { kind: "home" | "part" | "image" | "fn" | "sdk"; id: string };
 
 export interface MapNode {
@@ -21,7 +38,7 @@ export interface MapNode {
   ref: MapRef;
   tip: string;
   itemStyle?: Record<string, string | number>;
-  label?: { show: boolean };
+  label?: { show?: boolean; color?: string };
   upperLabel?: Record<string, string | number | boolean>;
   children?: MapNode[];
 }
@@ -44,6 +61,7 @@ const fnNode = (fn: Fn, tokens: Tokens): MapNode => ({
   ref: { kind: "fn", id: fn.unit },
   tip: fnTip(fn),
   itemStyle: { color: tokens.status[fn.status] },
+  label: { color: readableOn(tokens.status[fn.status]) },
 });
 
 const sdkTip = (fn: Fn): string =>
@@ -61,7 +79,7 @@ const sdkNode = (fn: Fn, tokens: Tokens): MapNode => ({
   ref: { kind: "fn", id: fn.unit },
   tip: sdkTip(fn),
   itemStyle: { color: tokens.sdk },
-  label: { show: true },
+  label: { show: true, color: readableOn(tokens.sdk) },
 });
 
 const total = (nodes: MapNode[]): number => nodes.reduce((sum, node) => sum + node.value, 0);
@@ -101,7 +119,12 @@ function sdkTree(functions: Fn[], id: string, title: string, tokens: Tokens): Ma
       tip: `<b>${escapeText(name)}</b><br>${escapeText(SDK.libraryTip(members.length, size))}`,
       itemStyle: { color: "transparent", borderColor: tokens.bg, borderWidth: 1, gapWidth: 1 },
       label: { show: false },
-      upperLabel: { show: true, height: 14, color: tokens.ink, fontSize: 10 },
+      upperLabel: {
+        show: true,
+        height: 14,
+        color: readableOn(tokens.sdk),
+        fontSize: 10,
+      },
       children: cells,
     };
   });
@@ -113,7 +136,13 @@ function sdkTree(functions: Fn[], id: string, title: string, tokens: Tokens): Ma
     tip: `<b>${escapeText(title)}</b>`,
     itemStyle: { color: "transparent", borderColor: tokens.bg, borderWidth: 2, gapWidth: 1 },
     label: { show: false },
-    upperLabel: { show: true, height: 18, color: tokens.ink, fontSize: 12, fontWeight: "bold" },
+    upperLabel: {
+      show: true,
+      height: 18,
+      color: readableOn(tokens.sdk),
+      fontSize: 12,
+      fontWeight: "bold",
+    },
     children,
   };
 }
@@ -193,7 +222,10 @@ export function overviewTree(
     for (const library of libraries) {
       const room = Math.sqrt(width * height * library.value / (model.game.bytes + model.sdk.bytes))
         / 1.3;
-      library.label = { show: room >= library.name.length * 6 + 10 };
+      library.label = {
+        show: room >= library.name.length * 6 + 10,
+        color: readableOn(tokens.sdk),
+      };
     }
     if (libraries.length) {
       children.push({
@@ -231,6 +263,7 @@ export function overviewTree(
       return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`;
     };
     const name = `${entry.name}\n${percent(entry.code.exactBytes, entry.code.bytes, 1)}%`;
+    const fill = blend(tokens.status.open, tokens.status.pure);
     return {
       id: `${by}:${entry.id}`,
       name,
@@ -239,7 +272,8 @@ export function overviewTree(
       tip: `${escapeText(entry.name)}<br>${
         percent(entry.code.exactBytes, entry.code.bytes, 1)
       }% rebuilt in C by size`,
-      itemStyle: { color: blend(tokens.status.open, tokens.status.pure) },
+      itemStyle: { color: fill },
+      label: { color: readableOn(fill) },
     };
   });
   const sdkBytes = part
@@ -262,9 +296,16 @@ export function overviewTree(
   {
     const size = total(children);
     for (const node of children) {
-      if (node.ref.kind !== "image") continue;
-      const room = Math.sqrt(width * height * node.value / size) / 1.3;
-      node.label = { show: room >= Math.max(60, node.name.split("\n")[0].length * 6 + 10) };
+      const fill = typeof node.itemStyle?.color === "string" ? node.itemStyle.color : tokens.ink;
+      if (node.ref.kind === "image") {
+        const room = Math.sqrt(width * height * node.value / size) / 1.3;
+        node.label = {
+          show: room >= Math.max(60, node.name.split("\n")[0].length * 6 + 10),
+          color: readableOn(fill),
+        };
+      } else if (node.ref.kind === "sdk" && !node.children) {
+        node.label = { show: true, color: readableOn(fill) };
+      }
     }
   }
   return {
@@ -336,8 +377,6 @@ export function treemapOption(view: MapNode, tokens: Tokens): ChartOption {
           show: true,
           color: "#ffffff",
           fontSize: 10,
-          textBorderColor: "rgba(0,0,0,0.7)",
-          textBorderWidth: 2,
         },
         upperLabel: upper,
         // Depth 0 is the hidden root.
@@ -346,13 +385,8 @@ export function treemapOption(view: MapNode, tokens: Tokens): ChartOption {
             ...leaf(true),
             label: {
               show: true,
-              color: tokens.ink,
               fontSize: 12,
               fontWeight: "bold",
-              textBorderColor: tokens.card,
-              textBorderWidth: 3,
-              textShadowColor: tokens.bg,
-              textShadowBlur: 3,
             },
           }]
           : view.ref.kind === "part"
