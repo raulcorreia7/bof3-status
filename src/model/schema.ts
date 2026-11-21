@@ -1,15 +1,10 @@
-// The data file the page reads, as a Zod schema: only the fields it uses. Parsing drops every
-// other field and fails on a file whose shape changed. types.ts derives the input type from here.
-
 import * as z from "zod/mini";
 
 /** objdiff writes byte counts as strings. */
 const measure = z.optional(z.coerce.number());
 
-/** report.json: objdiff-cli report version 2. A unit is a source file holding one or more functions. */
 export const ReportSchema = z.object({
   version: z.optional(z.number()),
-  /** The bof3-decomp commit the report was built from, and when it was published. Absent in older reports. */
   source: z.optional(
     z.object({ repository: z.string(), commit: z.string(), published: z.string() }),
   ),
@@ -29,7 +24,6 @@ export const ReportSchema = z.object({
       ),
       metadata: z.object({
         source_path: z.optional(z.string()),
-        /** SDK units only: the PsyQ library, the member object and how the unit enters the image. */
         sdk: z.optional(
           z.object({
             library: z.string(),

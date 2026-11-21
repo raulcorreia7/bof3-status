@@ -1,5 +1,3 @@
-// The README badge: "C match" and the share of game functions rebuilt in C (the headline).
-
 import { percent, round, share } from "../model/format.ts";
 import { textWidth } from "../model/text.ts";
 import { POSTER } from "../strings.ts";

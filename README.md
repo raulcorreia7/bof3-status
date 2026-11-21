@@ -48,9 +48,7 @@ make build    # site/ and the pictures (npm run build)
 npm run dev   # dev server on `data/report.json`
 ```
 
-Open the site at <https://raulcorreia7.github.io/bof3-status/>. It links `report.json` and
-`progress.png`, and also serves `progress.svg` and `badge.svg`. To show the badge elsewhere, link
-`https://raulcorreia7.github.io/bof3-status/badge.svg`.
+The site links `report.json` and `progress.png` and serves `progress.svg` and `badge.svg`.
 
 ## Check
 
@@ -70,8 +68,7 @@ make check    # format check, tsc, license gate, tests
 - Figures come by function count and by code bytes. The PsyQ SDK and hand-written assembly stay out
   of every game code figure.
 
-The page repeats this under "How progress is measured". The report fields and the status rules are
-in [docs/site.md](docs/site.md#data-file).
+Report fields and status rules: [docs/site.md](docs/site.md#data-file).
 
 ## Publish
 
@@ -95,7 +92,7 @@ Commit `data/report.json` (`npm run report`) when the data shape changes, so pul
 - [CONTRIBUTING.md](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the
   [security policy](SECURITY.md).
 - [docs/site.md](docs/site.md): page structure and the report format.
-- [AGENTS.md](AGENTS.md): the same paths for a coding agent.
+- [AGENTS.md](AGENTS.md): guide for a coding agent.
 
 ## License
 

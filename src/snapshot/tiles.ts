@@ -1,16 +1,11 @@
-// One square per function, packed into blocks and squarified into a panel (the picture's map).
-
 import { bytes, escapeText, round } from "../model/format.ts";
 import { STATUS, STATUSES } from "../model/status.ts";
 import { shorten, textWidth } from "../model/text.ts";
 import type { Fn } from "../types.ts";
 import { C, frame, rect, text } from "./svg.ts";
 
-// Pixels of panel area per code byte; sets how large the tiles are.
 const AREA_PER_BYTE = 0.85;
-// A function counts for at least this many bytes, so a stub still gets a visible tile.
 const MIN_BYTES = 80;
-// A block smaller than this many pixels joins the "other" block, which names its members.
 const MERGE_AREA = 2300;
 const INSET = 2;
 const TILE_GAP = 1;
@@ -67,7 +62,6 @@ function squarify(
   return out;
 }
 
-/** The largest square pitch and column count that fit `count` tiles in a box. */
 export function grid(count: number, width: number, height: number): [pitch: number, cols: number] {
   let best: [number, number] = [0, 1];
   for (let cols = 1; cols <= count; cols++) {
@@ -77,7 +71,6 @@ export function grid(count: number, width: number, height: number): [pitch: numb
   return best;
 }
 
-/** A block label in the box's top-left corner, shortened until it fits; null when none fits. */
 function label(name: string, w: number, h: number): { lines: string[]; size: number } | null {
   const short = name.replace(".EMI", "");
   const [head, slot] = short.split(" slot ");
@@ -115,7 +108,6 @@ function label(name: string, w: number, h: number): { lines: string[]; size: num
 const weightOf = (rows: Fn[]): number =>
   rows.reduce((sum, row) => sum + Math.max(row.bytes, MIN_BYTES), 0);
 
-/** Rows in tile order: by status, then target, then address. */
 export const sorted = (rows: Fn[]): Fn[] =>
   [...rows].sort((a, b) =>
     STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status) || a.target.localeCompare(b.target)
@@ -156,7 +148,6 @@ function block(rows: Fn[], name: string, box: number[]): { svg: string; fitted: 
   return { svg, fitted: fit !== null };
 }
 
-/** Blocks under MERGE_AREA join one "other" block that names them. */
 function mergeSmall(blocks: Block[], scale: number): Block[] {
   const small = blocks.filter((b) => weightOf(b.rows) * AREA_PER_BYTE * scale < MERGE_AREA);
   if (small.length < 2) return blocks;
@@ -167,7 +158,6 @@ function mergeSmall(blocks: Block[], scale: number): Block[] {
   }];
 }
 
-/** A panel: heading, then blocks by code bytes. Returns the SVG and the y below it. */
 export function panel(
   title: string,
   blocks: Block[],

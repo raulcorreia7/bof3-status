@@ -1,15 +1,11 @@
-// The function search: the game functions that match some words, sorted.
-
 import type { Fn, Model } from "../types.ts";
 import type { Route } from "./route.ts";
 import { STATUSES } from "./status.ts";
 
-/** Rows the function table adds each time it is asked for more. */
 export const PAGE_STEP = 200;
 
 const words = (query: string): string[] => query.toLowerCase().split(/\s+/).filter(Boolean);
 
-/** The game functions that match the search words, in the route's order. */
 export function browse(model: Model, route: Route): Fn[] {
   const needed = words(route.q);
   const targetOrder = new Map(model.targets.map((target, index) => [target.id, index]));

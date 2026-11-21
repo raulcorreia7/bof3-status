@@ -1,5 +1,3 @@
-// The page state that a link carries, kept in the URL hash so every view is shareable.
-
 //   #fn/exe%2Fslus_004_22%2Ffunc_8015AD00                 the home page with a source file open
 //   #image/emi%2Fworld00%2Farea037%2F13                   an image page (its treemap)
 //   #image/emi%2Fworld00%2Farea037%2F13?fn=...            the same with a source file open
@@ -9,28 +7,18 @@
 //
 // Older links still open: #target/<id> is the image page, #group/<key> the part page.
 
-// A parameter that holds its default value is left out of the hash.
-
-/** The page: home (the sections), one part of the game, or one image. */
 export type View = { kind: "home" } | { kind: "image"; id: string } | { kind: "part"; key: string };
 
 export type SortKey = "address" | "size" | "name" | "status";
 
 export interface Route {
   view: View;
-  /** The unit (source file) open in the side panel, by its objdiff name. */
   fn: string | null;
-  /** The function selected in that unit, by its model id; null for the file as a whole. */
   f: string | null;
-  /** Search words. */
   q: string;
-  /** The home map: parts of the game or the images. */
   by: "part" | "image";
-  /** Status filter: empty for all, else a game status key. */
   st: string;
-  /** Part of the game filter: empty for all, else a group key. */
   part: string;
-  /** Image filter: empty for all, else a target id. */
   image: string;
   sort: SortKey;
   dir: "asc" | "desc";
@@ -53,26 +41,22 @@ const SORTS: SortKey[] = ["address", "size", "name", "status"];
 const oneOf = <T extends string>(options: readonly T[], value: string | null, fallback: T): T =>
   options.find((option) => option === value) ?? fallback;
 
-/** The home-page sections a link can open. */
 export const SECTION_IDS = ["map", "overview", "find", "method", "parts", "sdk"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 export const isSectionId = (value: string): value is SectionId =>
   SECTION_IDS.some((id) => id === value);
 
-/** The section a hash points at, ignoring any query it carries. */
 export function sectionOfHash(hash: string): SectionId | null {
   const [path = ""] = hash.replace(/^#/, "").split("?");
   return isSectionId(path) ? path : null;
 }
 
-/** The hash of a home-page section, carrying the route's search parameters. */
 export function sectionHash(route: Route, section: string): string {
   const rest = formatHash({ ...route, view: HOME.view, fn: null });
   const query = rest.includes("?") ? rest.slice(rest.indexOf("?")) : "";
   return `#${section}${query}`;
 }
 
-/** A path that older pages wrote; parseHash reads it, formatHash never writes it. */
 export const isLegacyPath = (hash: string): boolean => /^#(target|group)\//.test(hash);
 
 export function parseHash(hash: string): Route {
@@ -99,7 +83,6 @@ export function parseHash(hash: string): Route {
   };
 }
 
-/** The path of a page, without the query: two routes on the same page share it. */
 export function pagePath(view: View): string {
   if (view.kind === "image") return `image/${encodeURIComponent(view.id)}`;
   if (view.kind === "part") return `part/${encodeURIComponent(view.key)}`;
@@ -109,7 +92,6 @@ export function pagePath(view: View): string {
 export function formatHash(route: Route): string {
   const params = new URLSearchParams();
   const page = pagePath(route.view);
-  // On the home page an open function is the path, as links have always been.
   const path = page || (route.fn ? `fn/${encodeURIComponent(route.fn)}` : "");
   if (page && route.fn) params.set("fn", route.fn);
   if (route.fn && route.f) params.set("f", route.f);

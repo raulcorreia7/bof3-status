@@ -1,6 +1,3 @@
-// A thin Solid wrapper over one ECharts instance: it creates the chart when it scrolls into
-// view, keeps it sized, and redraws when the option changes.
-
 import type { ECharts } from "echarts/core";
 import { createEffect, onCleanup, onMount, untrack } from "solid-js";
 import type { ChartOption } from "../charts/register.ts";
@@ -9,7 +6,6 @@ export interface ChartClick {
   data?: { ref?: unknown };
 }
 
-/** Copy the drawn canvas over the chart, so an option swap fades instead of cutting. */
 function capture(host: HTMLDivElement): HTMLCanvasElement | null {
   const source = [...host.querySelectorAll("canvas")].find((canvas) =>
     !canvas.classList.contains("chart-snapshot")
@@ -28,7 +24,6 @@ function capture(host: HTMLDivElement): HTMLCanvasElement | null {
   return overlay;
 }
 
-/** Let the new drawing show through over 180 ms, then drop the copy. */
 function release(overlay: HTMLCanvasElement): void {
   requestAnimationFrame(() => {
     overlay.style.opacity = "0";
@@ -39,12 +34,9 @@ function release(overlay: HTMLCanvasElement): void {
 interface Props {
   option: ChartOption;
   height: number;
-  /** Accessible name; the chart is a picture, so the text next to it carries the numbers. */
   label: string;
   onClick?: (params: ChartClick) => void;
-  /** Fade the previous drawing into the new one on an option change (treemap drills). */
   crossfade?: boolean;
-  /** Replace the option instead of merging it; for a data swap the crossfade hides the cut. */
   replace?: boolean;
 }
 
@@ -55,7 +47,6 @@ export function Chart(props: Props) {
 
   onMount(() => {
     let starting = false;
-    // ECharts loads as its own chunk, so the page text paints before the chart code is parsed.
     const create = async () => {
       if (chart || starting) return;
       starting = true;
@@ -70,7 +61,6 @@ export function Chart(props: Props) {
       { rootMargin: "300px" },
     );
     watcher.observe(host);
-    // Resize on the next frame, once per frame, so a drag of the window does not redraw per event.
     let frame = 0;
     const resizer = new ResizeObserver(() => {
       cancelAnimationFrame(frame);

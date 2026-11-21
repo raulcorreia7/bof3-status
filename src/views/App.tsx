@@ -1,5 +1,3 @@
-// The page: the header, then the home page sections or one part or image page.
-
 import { createEffect, createMemo, For, type JSX, onMount, Show } from "solid-js";
 import { type MapRef, overviewTree, treemapOption } from "../charts/treemap.ts";
 import { inspector } from "../inspect.ts";
@@ -26,7 +24,6 @@ import { Inspector } from "./Inspector.tsx";
 import { scrollToSection } from "./scroll.ts";
 import { Chip, Jump } from "./ui.tsx";
 
-/** The sections of the home page, in order: the anchor (#map) and the title, also the navigation link. */
 const NAV = [
   { id: "map", title: MAP.heading },
   { id: "overview", title: SUMMARY.overviewHeading },
@@ -57,13 +54,10 @@ function Layout() {
   });
   const inspectorOpen = () => !!page.route.fn;
   const inspectorData = createMemo(() => inspector(page));
-  // A section hash, or a search query, opens the home page at that view.
   onMount(() => {
     const section = sectionOfHash(window.location.hash) ?? (page.route.q ? "find" : null);
     if (section) requestAnimationFrame(() => scrollToSection(section, false));
   });
-  // The skip link moves focus to the page content without changing the route: a plain #content
-  // navigation would be read as the home page by the hash router.
   const skipToContent = (event: MouseEvent) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
       return;

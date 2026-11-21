@@ -1,5 +1,3 @@
-// The side panel's selector: the source file the route opens.
-
 import { bytes, hex } from "./model/format.ts";
 import { findUnit, neighbours } from "./model/index.ts";
 import { ASSEMBLY_LIBRARY } from "./model/report.ts";

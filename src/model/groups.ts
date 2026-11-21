@@ -1,22 +1,3 @@
-// Which part of the game a target belongs to, declared as rules. The first rule whose pattern
-// matches the target id gives the group; the groups are drawn in this order.
-//
-//   exe/slus_004_22                     -> main        SLUS_004.22
-//   exe/logo                            -> logo        LOGO.EXE
-//   emi/etc/bate/..                      -> battle      (BATE is a battle overlay in ETC)
-//   emi/etc/..                           -> system      Game system and menus
-//   emi/battle/..                        -> battle      Battle
-//   emi/bmagic/..                        -> magic       Battle magic
-//   emi/boss/..                          -> bosses      Bosses
-//   emi/plchar/..                        -> characters  Characters
-//   emi/world00/area037/13               -> world       World areas (WORLD00 to WORLD04)
-//   emi/scenario/..                      -> scenario    Scenario and cutscenes
-//   anything else                        -> other       so no target disappears
-//
-// The rules list BATE before the rest of ETC; PAGE_ORDER sets the order on the page.
-// `tiles` draws a group of many near-identical overlays as a grid of small image tiles. Each
-// group's heading and note are in strings.ts (GROUP_LABEL, GROUP_NOTE).
-
 import { GROUP_LABEL, GROUP_NOTE } from "../strings.ts";
 
 interface Rule {
@@ -38,7 +19,6 @@ const GROUP_RULES: readonly Rule[] = [
   { key: "scenario", pattern: /^emi\/scenario\//, tiles: false },
 ];
 export const OTHER = "other";
-/** The groups in page order; `other` closes it. */
 const PAGE_ORDER = [
   "main",
   "logo",
@@ -55,7 +35,6 @@ const PAGE_ORDER = [
 export const groupKey = (targetId: string): string =>
   GROUP_RULES.find((rule) => rule.pattern.test(targetId))?.key ?? OTHER;
 
-/** Groups in page order. */
 export const compareGroups = (a: { key: string }, b: { key: string }): number =>
   PAGE_ORDER.indexOf(a.key) - PAGE_ORDER.indexOf(b.key);
 

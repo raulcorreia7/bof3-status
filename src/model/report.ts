@@ -1,7 +1,3 @@
-// The adapter: objdiff's report.json in, the model the page and the picture draw (types.ts) out.
-// A report unit is a source file; its functions are what the page counts, draws and lists. Pure
-// functions, so node:test covers them.
-
 import * as z from "zod/mini";
 import type {
   Code,
@@ -31,7 +27,6 @@ export const ASSEMBLY_LIBRARY = "assembly";
 const PSYQ_OBJECT = /^toolchains\/psyq\/([^/]+)\/([^/]+)\//;
 const EXE_NAME: Record<string, string> = { slus_004_22: "SLUS_004.22", logo: "LOGO.EXE" };
 
-/** Count functions by status, with done totals and the code-byte weighted fuzzy match. */
 function tally(functions: Fn[]): Tally {
   const statuses = Object.fromEntries(
     STATUSES.map((key) => [key, { functions: 0, bytes: 0 }]),
@@ -61,7 +56,6 @@ function tally(functions: Fn[]): Tally {
   };
 }
 
-/** The display name of a target, derived from its id (`BATTLE.EMI slot 3`). */
 function targetName(id: string, archives: Map<string, number>): string {
   const parts = id.split("/");
   if (parts[0] === "exe") return EXE_NAME[parts[1] ?? ""] ?? id;
@@ -71,17 +65,12 @@ function targetName(id: string, archives: Map<string, number>): string {
   return (archives.get(archive) ?? 1) > 1 && slot ? `${name} slot ${Number(slot)}` : name;
 }
 
-/** The absolute address a name carries (`func_801D1014`, `PopMatrix@0x80178BB4`), else null. */
 function addressOf(name: string): number | null {
   const stem = name.slice(name.lastIndexOf("/") + 1);
   const found = /^func_([0-9A-F]{8})$/.exec(stem) ?? /@0x([0-9A-Fa-f]{1,8})$/.exec(stem);
   return found ? parseInt(found[1], 16) : null;
 }
 
-/**
- * The image a unit belongs to. bof3-decomp names every unit `<image>/<source stem>`: the main
- * executables are `exe/<name>`, every overlay `emi/<family>/<archive>/<slot>`.
- */
 export function unitTarget(name: string): string {
   const parts = name.split("/");
   if (parts[0] === "exe") return parts.slice(0, 2).join("/");
@@ -89,14 +78,12 @@ export function unitTarget(name: string): string {
   return parts.slice(0, -1).join("/");
 }
 
-/** A function's status from its fuzzy match; a fuzzy match of 100 is the only match. */
 function statusOf(kind: Part, tier: Tier | null, fuzzy: number): Fn["status"] {
   if (kind === "game") return fuzzy === 100 ? "pure" : fuzzy > 0 ? "nonmatching" : "open";
   if (kind === "hand") return fuzzy === 100 ? "asm" : "assembly";
   return tier === "object" ? "object" : "assembly";
 }
 
-/** The file's status: all functions matched, some matched, or none. */
 function unitStatus(kind: Part, functions: Fn[], matched: number, tier: Tier | null): Fn["status"] {
   if (kind === "game") {
     return functions.length > 0 && matched === functions.length
@@ -113,11 +100,6 @@ function unitStatus(kind: Part, functions: Fn[], matched: number, tier: Tier | n
   return tier === "object" ? "object" : "assembly";
 }
 
-/**
- * The PsyQ library, member and version of an SDK unit. The report's `sdk` metadata says whether
- * the unit links from its PsyQ object (`object`) or stays split assembly (`tier: assembly`); a
- * report without it falls back to the object path.
- */
 function sdkOrigin(source: string, info: SdkInfo | undefined): Origin {
   const found = PSYQ_OBJECT.exec(source);
   const version = found ? found[1] : null;
@@ -140,7 +122,6 @@ const category = (report: Report, id: string): Report["categories"][number] => {
   return found;
 };
 
-/** The report counts the part's functions; its category carries the byte-weighted fuzzy match. */
 const measured = (functions: Fn[], source: Report["categories"][number]): Tally => ({
   ...tally(functions),
   fuzzy: source.measures.fuzzy_match_percent ?? 0,
@@ -272,7 +253,6 @@ function buildLibraries(functions: Fn[]): Library[] {
     });
 }
 
-/** Sum game code. */
 const addCode = (items: Code[]): Code =>
   items.reduce(
     (sum, code) => ({
@@ -286,7 +266,6 @@ const addCode = (items: Code[]): Code =>
     { functions: 0, exact: 0, draft: 0, bytes: 0, exactBytes: 0, draftBytes: 0 },
   );
 
-/** The file checked against its schema; the error names the file and the field that failed. */
 function parse<T>(name: string, schema: z.ZodMiniType<T>, value: unknown): T {
   const result = schema.safeParse(value);
   if (!result.success) {
@@ -295,7 +274,6 @@ function parse<T>(name: string, schema: z.ZodMiniType<T>, value: unknown): T {
   return result.data;
 }
 
-/** Check report.json against its schema, then build the model. */
 export const modelFromReport = (file: unknown): Model =>
   buildModel(parse("report.json", ReportSchema, file));
 
@@ -307,7 +285,6 @@ function buildModel(report: Report): Model {
   const sdkSource = category(report, CATEGORY.sdk);
   const handSource = category(report, CATEGORY.hand);
 
-  // The report has no target list: every unit names its image, and the image names its group.
   const ids = [...new Set(report.units.map((unit) => unitTarget(unit.name)))].sort((a, b) =>
     a.localeCompare(b)
   );
@@ -371,7 +348,6 @@ function buildModel(report: Report): Model {
   const functions = targets.flatMap((target) => target.functions);
   const units = targets.flatMap((target) => target.units);
   const unitById = new Map(units.map((unit) => [unit.id, unit]));
-  // Within a group the biggest target leads.
   const bySize = (a: Target, b: Target) =>
     b.code.bytes - a.code.bytes || a.name.localeCompare(b.name);
   const groups: Group[] = [...new Set(targets.map((target) => target.group))]

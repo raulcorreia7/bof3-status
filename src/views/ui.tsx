@@ -1,5 +1,3 @@
-// Small pieces the views share.
-
 import { For, type JSX } from "solid-js";
 import type { Route } from "../model/route.ts";
 import { STATUS } from "../model/status.ts";
@@ -22,7 +20,6 @@ export const StatusChip = (props: { status: Status }) => (
   </span>
 );
 
-/** The game statuses with their counts, the key of every game code bar. */
 export const StatusKey = (props: { items: { label: string; color: string; sub: string }[] }) => (
   <ul class="mt-3 flex flex-wrap gap-x-6 gap-y-2">
     <For each={props.items}>
@@ -39,7 +36,6 @@ export const StatusKey = (props: { items: { label: string; color: string; sub: s
   </ul>
 );
 
-/** The colored parts of a bar. */
 export const BarParts = (props: { parts: MeterRow["parts"] }) => (
   <For each={props.parts}>
     {(part) => <i style={{ width: `${part.width}%`, background: part.color }} />}
@@ -52,10 +48,6 @@ export const Meter = (props: { row: MeterRow; class?: string }) => (
   </div>
 );
 
-/**
- * A link to a view of the page. A plain click navigates in place (and scrolls to `scroll`, a
- * home page section); a click with a modifier key is left to the browser, for a new tab.
- */
 export function Jump(
   props: {
     to: Partial<Route>;
@@ -89,7 +81,6 @@ export function Jump(
   );
 }
 
-/** Inline content from a selector. */
 export function Parts(props: { parts: Part[] }) {
   return <For each={props.parts}>{(part) => <PartView part={part} />}</For>;
 }

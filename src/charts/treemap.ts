@@ -1,6 +1,3 @@
-// Game function treemaps of one part of the game or one image, sized by code bytes. Pure option
-// builders; views/Treemap.tsx draws them.
-
 import { bytes, escapeText, number, percent } from "../model/format.ts";
 import { ASSEMBLY_LIBRARY } from "../model/report.ts";
 import { STATUS } from "../model/status.ts";
@@ -9,7 +6,6 @@ import type { Tokens } from "../theme/tokens.ts";
 import type { Fn, Group, Model, Target } from "../types.ts";
 import type { ChartOption } from "./register.ts";
 
-/** A zero-byte function keeps one byte of area, so it stays in the map. */
 const MIN_WEIGHT = 1;
 
 /**
@@ -26,7 +22,6 @@ const luminance = (fill: string): number => {
   return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
 };
 
-/** Black or white, whichever has the higher contrast against `fill`. */
 const readableOn = (fill: string): string => (luminance(fill) > 0.179 ? "#000000" : "#ffffff");
 
 export type MapRef = { kind: "home" | "part" | "image" | "fn" | "sdk"; id: string; f?: string };
@@ -84,10 +79,6 @@ const sdkNode = (fn: Fn, tokens: Tokens): MapNode => ({
 
 const total = (nodes: MapNode[]): number => nodes.reduce((sum, node) => sum + node.value, 0);
 
-/**
- * One image's SDK code: a group, then a node per library, then a cell per member. It is drawn in
- * the neutral SDK color and never counts toward the progress figures.
- */
 export function sdkGroupTree(target: Target, tokens: Tokens, named = false): MapNode | null {
   return sdkTree(
     target.functions,
@@ -147,7 +138,6 @@ function sdkTree(functions: Fn[], id: string, title: string, tokens: Tokens): Ma
   };
 }
 
-/** One image's game functions, then its SDK group. */
 export function gameImageTree(target: Target, tokens: Tokens, withSdk = false): MapNode {
   const children = target.functions.filter((fn) => fn.kind === "game").map((fn) =>
     fnNode(fn, tokens)
@@ -166,7 +156,6 @@ export function gameImageTree(target: Target, tokens: Tokens, withSdk = false): 
   };
 }
 
-/** A part's game functions, grouped into images. */
 export function gamePartTree(group: Group, tokens: Tokens): MapNode {
   const images = group.targets.map((target) => gameImageTree(target, tokens)).filter((image) =>
     image.children?.length
@@ -185,7 +174,6 @@ export function gamePartTree(group: Group, tokens: Tokens): MapNode {
   };
 }
 
-/** One block per part or image, sized by bytes and shaded by rebuilt byte share. */
 export function overviewTree(
   model: Model,
   tokens: Tokens,
@@ -199,7 +187,6 @@ export function overviewTree(
     : imageOverview(model, tokens, width, height, part);
 }
 
-/** Mixes two `#rrggbb` colours; `amount` is the share of `color`. */
 function blend(base: string, color: string, amount: number): string {
   const a = Number.parseInt(base.slice(1), 16);
   const b = Number.parseInt(color.slice(1), 16);
@@ -208,7 +195,6 @@ function blend(base: string, color: string, amount: number): string {
   return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`;
 }
 
-/** Whether a block of `value` bytes in `size` has room for a label of at least `min` pixels. */
 function hasRoom(width: number, height: number, value: number, size: number, min: number) {
   return Math.sqrt(width * height * value / size) / 1.3 >= min;
 }
@@ -323,12 +309,6 @@ function imageOverview(
   };
 }
 
-/**
- * The option for the children of `view`. A part frames its images and leaves the functions
- * unnamed; an image names its functions. ECharts fits every label to its rectangle (it truncates
- * the text and drops lines that do not fit), so labels are right on the first paint without
- * reading the layout back.
- */
 export function treemapOption(view: MapNode, tokens: Tokens): ChartOption {
   const upper = {
     show: true,
@@ -384,7 +364,6 @@ export function treemapOption(view: MapNode, tokens: Tokens): ChartOption {
           fontSize: 10,
         },
         upperLabel: upper,
-        // Depth 0 is the hidden root.
         levels: view.ref.kind === "home"
           ? [hidden, ...(view.ref.id === "part" ? [parent] : []), {
             ...leaf(true),

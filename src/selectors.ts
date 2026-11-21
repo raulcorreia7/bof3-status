@@ -1,6 +1,3 @@
-// Selectors: each turns the model and the route into the data one kind of view draws
-// (viewtypes.ts). They are pure, so they run in Node as well as in the page.
-
 import { gameImageTree, overviewTree } from "./charts/treemap.ts";
 import { browse, PAGE_STEP } from "./model/browse.ts";
 import { bytes, percent, plural } from "./model/format.ts";
@@ -10,9 +7,6 @@ import { BROWSER, MAP, SDK, SUMMARY } from "./strings.ts";
 import type { Code, Fn, Target } from "./types.ts";
 import type { Ctx, GamePage, Link, MeterRow, Views } from "./viewtypes.ts";
 
-// Shared pieces ---------------------------------------------------------------------------
-
-/** One bar of game code split by status, by function count or by code bytes. */
 export const codeMeter = (
   code: Code,
   aria: string,
@@ -29,7 +23,6 @@ export const codeMeter = (
   };
 };
 
-/** The key of a game code bar: each status with its function count. */
 export const statusKey = (code: Code): GamePage["key"] =>
   codeCounts(code).map(([key, count]) => ({
     label: STATUS[key].label,
@@ -37,11 +30,8 @@ export const statusKey = (code: Code): GamePage["key"] =>
     sub: plural(count, "function"),
   }));
 
-// Overview and the sections below it -----------------------------------------------------
-
 const share = (done: number, total: number, digits = 1) => `${percent(done, total, digits)}%`;
 
-/** The headline: game code rebuilt in C, by functions and by size. */
 export function overviewCards({ model }: Ctx): Views["cards"] {
   const game = model.code;
   return {
@@ -64,7 +54,6 @@ export function overviewCards({ model }: Ctx): Views["cards"] {
   };
 }
 
-/** Two bars of all game code, by functions and by code bytes, with the status key. */
 export function overviewMeter({ model }: Ctx): Views["meters"] {
   const { code } = model;
   const heading = SUMMARY.gameHeading;
@@ -90,11 +79,9 @@ export function overviewMeter({ model }: Ctx): Views["meters"] {
   };
 }
 
-/** The PsyQ version the linked SDK units come from. */
 const sdkVersion = (functions: Fn[]): string =>
   functions.find((fn) => fn.kind === "sdk" && fn.version)?.version ?? "";
 
-/** The SDK units of some functions, linked from objects or split assembly, as unit and byte counts. */
 const sdkSplit = (functions: Fn[]) => {
   const linked = { units: 0, bytes: 0 };
   const split = { units: 0, bytes: 0 };
@@ -107,7 +94,6 @@ const sdkSplit = (functions: Fn[]) => {
   return { linked, split };
 };
 
-/** The SDK and the hand-written assembly, shown apart from the game totals. */
 export const apart = ({ model }: Ctx): Views["text"] => ({
   paragraphs: [
     {
@@ -122,7 +108,6 @@ export const apart = ({ model }: Ctx): Views["text"] => ({
   ],
 });
 
-// Map --------------------------------------------------------------------------------------
 const gameMapRoute = (
   view: Extract<Route["view"], { kind: "image" | "part" }>,
 ): Partial<Route> => ({
@@ -134,7 +119,6 @@ const gameMapRoute = (
   dir: "asc",
 });
 
-/** Game code by part of the game: each group's heading and bar, then its images, biggest first. */
 export function domains({ model }: Ctx): Views["domains"] {
   const { code } = model;
   const groups = model.groups
@@ -177,7 +161,6 @@ export function domains({ model }: Ctx): Views["domains"] {
   return { groups };
 }
 
-/** A part of the game or an image: the report's counts, then its functions as a treemap and a list. */
 export function gamePage({ model, route, tokens }: Ctx): GamePage | null {
   const home: Link = { label: MAP.heading, to: { view: HOME.view }, scroll: "map" };
   const empty = {
@@ -267,8 +250,6 @@ export function gamePage({ model, route, tokens }: Ctx): GamePage | null {
   }
   return null;
 }
-
-// Search -------------------------------------------------------------------------
 
 export const search = ({ model }: Ctx): Views["filters"] => ({
   search: {
