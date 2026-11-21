@@ -49,7 +49,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version-file: .node-version
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --prefer-offline --no-audit --no-fund
@@ -63,9 +63,6 @@ jobs:
           else
             echo "No progress release; using the committed data/report.json"
           fi
-      - uses: dprint/check@371a959e3c77f34a76a03d2c50df2e3f2302d016 # v2.6
-        with:
-          cache: true
       # dprint, tsc, licences, the build (which copies data/report.json into site/) and the tests.
       - run: npm run check
       - name: Check the site names only public projects
