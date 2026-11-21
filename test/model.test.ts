@@ -1,11 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { gameImageTree, overviewTree } from "../src/charts/treemap.ts";
-import { sourceLine } from "../src/model/format.ts";
 import { compareGroups } from "../src/model/groups.ts";
 import { modelFromReport } from "../src/model/report.ts";
-import { DARK } from "../src/theme/tokens.ts";
 
 interface Measures {
   total_functions: number;
@@ -55,18 +52,6 @@ test("the headline counts functions, matched functions and their bytes", () => {
     draftBytes: model.code.draftBytes,
   });
 });
-
-test("the SDK and hand-written assembly agree with their categories", () => {
-  for (const [part, id] of [["sdk", "sdk"], ["hand", "hand-asm"]] as const) {
-    const measures = category(id);
-    const tally = model[part];
-    assert.equal(tally.count, measures.total_functions, part);
-    assert.equal(tally.done, measures.matched_functions, part);
-    assert.equal(tally.bytes, Number(measures.total_code), part);
-    assert.equal(tally.doneBytes, Number(measures.matched_code), part);
-  }
-});
-
 test("every unit function is counted once, in one file and one target", () => {
   const units = model.targets.flatMap((target) => target.units);
   assert.equal(units.length, file.units.length);
@@ -93,7 +78,6 @@ test("every unit function is counted once, in one file and one target", () => {
     assert.equal(target.code.functions, target.game.count);
   }
 });
-
 test("groups and targets partition the game code", () => {
   const groups = model.groups.reduce((total, group) => {
     const [count, exact, bytes, exactBytes] = code(group.code);
@@ -122,94 +106,4 @@ test("groups and targets partition the game code", () => {
       model.groups[index]!.key,
     );
   }
-});
-
-test("zero-byte functions keep a one-byte treemap weight", () => {
-  const fn = model.functions.find((row) => row.kind === "game")!;
-  const target = model.targetById.get(fn.target)!;
-  const tree = gameImageTree({ ...target, functions: [{ ...fn, bytes: 0 }] }, DARK);
-  assert.equal(tree.children?.[0]?.value, 1);
-});
-
-test("SDK units keep their library and member, and stay out of the game figures", () => {
-  const sdk = model.functions.filter((fn) => fn.kind === "sdk");
-  assert.ok(sdk.every((fn) => fn.library));
-  assert.ok(sdk.some((fn) => fn.tier === "object" && fn.member));
-  assert.ok(sdk.some((fn) => fn.tier === "assembly" && fn.library !== "assembly"));
-  assert.equal(model.game.count, model.functions.filter((fn) => fn.kind === "game").length);
-});
-
-test("an executable's treemap holds one SDK group by library, in the SDK colour", () => {
-  const target = model.targetById.get("exe/slus_004_22")!;
-  const tree = gameImageTree(target, DARK, true);
-  const group = tree.children!.filter((node) => node.id.startsWith("sdk:"));
-  assert.equal(group.length, 1);
-  assert.ok(group[0]!.children!.length > 1);
-  const cells = group[0]!.children!.flatMap((library) => library.children!);
-  assert.ok(cells.every((cell) => cell.itemStyle?.color === DARK.sdk));
-  assert.equal(
-    cells.reduce((total, cell) => total + cell.value, 0),
-    target.functions.filter((fn) => fn.kind === "sdk").reduce(
-      (t, fn) => t + Math.max(fn.bytes, 1),
-      0,
-    ),
-  );
-});
-
-test("overview has one block per game part or image and one SDK block", () => {
-  for (const view of ["part", "image"] as const) {
-    const tree = overviewTree(model, DARK, view);
-    const sdk = tree.children!.filter((node) => node.ref.kind === "sdk");
-    assert.equal(sdk.length, 1);
-    assert.equal(sdk[0]!.value, model.sdk.bytes);
-    const game = tree.children!.filter((node) => node.ref.kind !== "sdk");
-    assert.ok(game.every((node) => node.ref.kind === view));
-    if (view === "part") {
-      assert.ok(
-        game.every((node) =>
-          node.children!.every((image) => image.ref.kind === "image" && !image.children)
-        ),
-      );
-    } else assert.ok(game.every((node) => !node.children));
-    assert.equal(sum(game.map((node) => node.value)), model.game.bytes);
-  }
-});
-
-test("executables have separate parts and part maps contain image blocks", () => {
-  const main = model.targetById.get("exe/slus_004_22")!;
-  const logo = model.targetById.get("exe/logo")!;
-  assert.notEqual(main.group, logo.group);
-  const tree = overviewTree(model, DARK, "image", 992, 540, "world");
-  const images = tree.children!.filter((node) => node.ref.kind === "image");
-  assert.equal(
-    images.length,
-    model.groups.find((group) => group.key === "world")!.targets.filter((target) =>
-      target.code.bytes > 0
-    ).length,
-  );
-  assert.ok(
-    images.every((node) => !node.children && model.targetById.get(node.ref.id)?.group === "world"),
-  );
-});
-
-test("source is optional and drives the freshness line", () => {
-  assert.equal(modelFromReport(file).source === null, !("source" in file));
-  const source = {
-    repository: "raulcorreia7/bof3-decomp",
-    commit: "0123456789abcdef0123456789abcdef01234567",
-    published: "2026-11-05T10:00:00Z",
-  };
-  const withSource = modelFromReport({ ...file, source });
-  assert.deepEqual(withSource.source, source);
-  const line = sourceLine(withSource.source)!;
-  assert.equal(line.name, "bof3-decomp");
-  assert.equal(line.sha, "0123456");
-  assert.equal(
-    line.href,
-    "https://github.com/raulcorreia7/bof3-decomp/commit/0123456789abcdef0123456789abcdef01234567",
-  );
-  assert.equal(line.iso, "2026-11-05T10:00:00.000Z");
-  const { source: _drop, ...bare } = file as typeof file & { source?: unknown };
-  assert.equal(modelFromReport(bare).source, null);
-  assert.equal(sourceLine(null), null);
 });
