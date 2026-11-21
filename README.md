@@ -16,12 +16,11 @@ No game data is included. This is a fan project, not affiliated with or endorsed
 
 ## Requirements
 
-| Tool                                                       | Version        | Install                                                                |
-| ---------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- |
-| Git                                                        | any            | Your package manager                                                   |
-| [Node.js](https://nodejs.org/en/download) with npm         | 22 or later    | The official installer or your package manager                         |
-| make                                                       | any            | Your package manager                                                   |
-| [dprint](https://github.com/dprint/dprint/releases/latest) | latest release | Download the standalone executable onto `PATH`; needed by `make check` |
+| Tool                                                       | Version        | Install                                                                   |
+| ---------------------------------------------------------- | -------------- | ------------------------------------------------------------------------- |
+| Git                                                        | any            | Your package manager                                                      |
+| [Node.js](https://nodejs.org/en/download) with npm         | 22 or later    | The official installer or your package manager                            |
+| [dprint](https://github.com/dprint/dprint/releases/latest) | latest release | Download the standalone executable onto `PATH`; needed by `npm run check` |
 
 No game data or disc is needed.
 
@@ -39,7 +38,7 @@ npm ci
 ## Build
 
 ```sh
-make build    # site/ and the pictures (npm run build)
+npm run build    # site/ and the pictures
 ```
 
 ## Run
@@ -53,12 +52,10 @@ The site links `report.json` and `progress.png` and serves `progress.svg` and `b
 ## Check
 
 ```sh
-make check    # format check, tsc, license gate, tests
+npm run check    # dprint, tsc, license gate, build, tests
 ```
 
-`make help` lists every target. Individual scripts: `npm test` (model totals, from
-`data/report.json`), `npm run lint` (tsc), `npm run format` (dprint: ts, tsx, json, md) and
-`npm run licenses` (dependency license gate; reviewed exceptions live in `licenses.json`).
+`npm run` lists the scripts. Reviewed license exceptions live in `licenses.json`.
 
 ## How progress is measured
 

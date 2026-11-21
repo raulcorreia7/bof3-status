@@ -11,7 +11,7 @@ over the decompilation's objdiff report. Read [README.md](README.md), then [docs
 - Do not add game data.
 - Format with dprint.
 - Add only dependencies whose license `npm run licenses` allows.
-- Run `make check` before committing.
+- Run `npm run check` before committing.
 
 ## Commits
 
@@ -20,7 +20,7 @@ over the decompilation's objdiff report. Read [README.md](README.md), then [docs
 ## Index
 
 - Skills: none.
-- Tools: `make help`.
+- Tools: `npm run`.
 - Docs: [docs/site.md](docs/site.md).
 - CI: [.github/workflows/deploy.yml](.github/workflows/deploy.yml) builds and publishes the site.
 - Wiki (game and format facts): [site](https://raulcorreia7.github.io/bof3-wiki/). For a model: [llms.txt](https://raulcorreia7.github.io/bof3-wiki/llms.txt) (index), [llms-small.txt](https://raulcorreia7.github.io/bof3-wiki/llms-small.txt) (compact), [llms-full.txt](https://raulcorreia7.github.io/bof3-wiki/llms-full.txt) (everything).
