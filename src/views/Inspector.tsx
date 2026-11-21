@@ -49,12 +49,12 @@ export function Inspector(props: { data: Accessor<Views["inspector"]> }) {
           class="sticky top-0 h-screen w-100 max-w-full flex-none self-start overflow-auto border-l border-line bg-card p-4 focus:outline-none max-xl:fixed max-xl:inset-x-0 max-xl:top-auto max-xl:bottom-0 max-xl:z-20 max-xl:h-[62vh] max-xl:w-auto max-xl:rounded-t-xl max-xl:border max-xl:shadow-[0_-8px_24px_rgb(0_0_0/0.35)]"
           ref={panel}
           tabIndex={-1}
-          aria-label={`${INSPECT.kind}: ${data().title}`}
+          aria-label={`${INSPECT.type}: ${data().title}`}
           data-inspector
         >
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0">
-              <div class="text-sm text-mute">{INSPECT.kind}</div>
+              <div class="text-sm text-mute">{INSPECT.type}</div>
               <h2 class="text-xl font-semibold break-all">{data().title}</h2>
             </div>
             <div class="flex flex-wrap justify-end gap-1.5">

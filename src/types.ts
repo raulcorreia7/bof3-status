@@ -20,7 +20,7 @@ export interface Fn {
   fuzzy: number;
   fuzzyReported: boolean;
   status: Status;
-  kind: Part;
+  type: Part;
   key: string;
   library?: string;
   member?: string;
@@ -33,7 +33,7 @@ export interface Unit {
   target: string;
   name: string;
   source: string | null;
-  kind: Part;
+  type: Part;
   addr: string;
   address: number | null;
   bytes: number;

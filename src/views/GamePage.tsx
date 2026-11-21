@@ -95,7 +95,7 @@ function Images(props: { data: Accessor<GamePage>; tree: Accessor<MapNode> }) {
             {(image) => (
               <li>
                 <Jump
-                  to={{ view: { kind: "image", id: image.id }, fn: null, f: null }}
+                  to={{ view: { type: "image", id: image.id }, fn: null, f: null }}
                   class="block rounded border border-line px-2 py-1.5 text-ink hover:border-accent hover:no-underline"
                 >
                   {image.name} ·{" "}
@@ -193,9 +193,9 @@ function Canvas(props: { tree: Accessor<MapNode>; label: string }) {
   const viewport = useViewport();
   const onClick = (params: ChartClick) => {
     const ref = chartRef(params);
-    if (ref?.kind === "fn") page.go({ fn: ref.id, f: ref.f ?? null });
-    else if (ref?.kind === "image") {
-      page.go({ view: { kind: "image", id: ref.id }, fn: null, f: null });
+    if (ref?.type === "fn") page.go({ fn: ref.id, f: ref.f ?? null });
+    else if (ref?.type === "image") {
+      page.go({ view: { type: "image", id: ref.id }, fn: null, f: null });
     }
   };
   return (

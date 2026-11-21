@@ -217,10 +217,10 @@ function HomeMap() {
   );
   const onClick = (params: ChartClick) => {
     const ref = chartRef(params);
-    if (ref?.kind === "part") page.go({ view: { kind: "part", key: ref.id }, fn: null, f: null });
-    else if (ref?.kind === "image") {
-      page.go({ view: { kind: "image", id: ref.id }, fn: null, f: null });
-    } else if (ref?.kind === "sdk") page.go({ view: HOME.view }, false, "sdk");
+    if (ref?.type === "part") page.go({ view: { type: "part", key: ref.id }, fn: null, f: null });
+    else if (ref?.type === "image") {
+      page.go({ view: { type: "image", id: ref.id }, fn: null, f: null });
+    } else if (ref?.type === "sdk") page.go({ view: HOME.view }, false, "sdk");
   };
   return (
     <>

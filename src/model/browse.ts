@@ -10,7 +10,7 @@ export function browse(model: Model, route: Route): Fn[] {
   const needed = words(route.q);
   const targetOrder = new Map(model.targets.map((target, index) => [target.id, index]));
   const found = model.functions.filter((fn) =>
-    fn.kind === "game"
+    fn.type === "game"
     && (!route.st || fn.status === route.st)
     && (!route.part || model.targetById.get(fn.target)?.group === route.part)
     && (!route.image || fn.target === route.image)

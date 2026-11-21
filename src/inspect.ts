@@ -32,8 +32,8 @@ function unitFields(model: Model, unit: Unit): Field[] {
     fields.splice(1, 0, field(F.ends, text(hex(unit.address + unit.bytes), { code: true })));
   }
   if (unit.fuzzyReported) fields.push(field(F.fuzzy, text(`${unit.fuzzy.toFixed(1)}%`)));
-  fields.push(field(F.code, text(INSPECT.code[unit.kind])));
-  if (unit.kind === "sdk") {
+  fields.push(field(F.code, text(INSPECT.code[unit.type])));
+  if (unit.type === "sdk") {
     fields.push(
       field(
         F.library,
@@ -44,15 +44,15 @@ function unitFields(model: Model, unit: Unit): Field[] {
     if (unit.version) fields.push(field(F.version, text(unit.version)));
   }
   fields.push(
-    field(F.image, text(target.name, { to: { view: { kind: "image", id: target.id } } })),
-    field(F.group, text(target.groupLabel, { to: { view: { kind: "part", key: target.group } } })),
+    field(F.image, text(target.name, { to: { view: { type: "image", id: target.id } } })),
+    field(F.group, text(target.groupLabel, { to: { view: { type: "part", key: target.group } } })),
   );
   if (unit.source?.endsWith(".c")) fields.push(field(F.source, text(unit.source, { code: true })));
   else if (unit.source) fields.push(field(F.source, text(unit.source, { code: true, mute: true })));
   else {fields.push(field(
       F.source,
       text(
-        unit.kind === "sdk"
+        unit.type === "sdk"
           ? (unit.tier === "assembly" ? INSPECT.noSourceAssembly : INSPECT.noSourceSdk)
           : INSPECT.noSource,
         { mute: true },

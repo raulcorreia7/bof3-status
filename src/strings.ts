@@ -179,7 +179,7 @@ export const BROWSER = {
 };
 
 export const INSPECT = {
-  kind: "File",
+  type: "File",
   function: "Function",
   close: "Close",
   copyLink: "Copy link",
