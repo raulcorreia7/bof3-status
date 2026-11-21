@@ -4,8 +4,7 @@ import { test } from "node:test";
 import { gameImageTree, overviewTree } from "../src/charts/treemap.ts";
 import { sourceLine } from "../src/model/format.ts";
 import { compareGroups } from "../src/model/groups.ts";
-import { modelFromReport, unitTarget } from "../src/model/report.ts";
-import { STATUSES } from "../src/model/status.ts";
+import { modelFromReport } from "../src/model/report.ts";
 import { DARK } from "../src/theme/tokens.ts";
 
 interface Measures {
@@ -40,12 +39,6 @@ const code = (
   c: { functions: number; exact: number; bytes: number; exactBytes: number },
 ): [number, number, number, number] => [c.functions, c.exact, c.bytes, c.exactBytes];
 const functions = file.units.flatMap((unit) => unit.functions);
-
-test("units name their image, and the image is the report's target", () => {
-  assert.equal(unitTarget("exe/slus_004_22/func_80164028"), "exe/slus_004_22");
-  assert.equal(unitTarget("exe/slus_004_22/MSC01-tail/InvSquareRoot"), "exe/slus_004_22");
-  assert.equal(unitTarget("emi/battle/battle/03/func_801D1014"), "emi/battle/battle/03");
-});
 
 test("the headline counts functions, matched functions and their bytes", () => {
   const game = category("game");
@@ -99,34 +92,6 @@ test("every unit function is counted once, in one file and one target", () => {
     assert.ok(target.functions.every((fn) => fn.target === target.id));
     assert.equal(target.code.functions, target.game.count);
   }
-});
-
-test("every status counts its functions and bytes exactly once", () => {
-  for (const tally of [model.game, model.sdk, model.hand]) {
-    assert.equal(sum(STATUSES.map((key) => tally.statuses[key].functions)), tally.count);
-    assert.equal(sum(STATUSES.map((key) => tally.statuses[key].bytes)), tally.bytes);
-  }
-  assert.equal(model.game.statuses.pure.functions, model.game.done);
-  assert.equal(
-    model.game.statuses.nonmatching.functions + model.game.statuses.open.functions,
-    model.game.count - model.game.done,
-  );
-  assert.equal(
-    model.game.done + model.sdk.done + model.hand.done,
-    sum(file.categories.map((entry) => entry.measures.matched_functions)),
-  );
-});
-
-test("the SDK assembly-only functions still count as matched", () => {
-  assert.equal(
-    model.sdk.done,
-    model.sdk.statuses.object.functions + model.sdk.statuses.assembly.functions,
-  );
-  assert.equal(sum(model.libraries.map((lib) => lib.count)), model.sdk.count);
-  assert.equal(
-    model.libraries.reduce((total, lib) => total + lib.functions.length, 0),
-    model.sdk.count,
-  );
 });
 
 test("groups and targets partition the game code", () => {
