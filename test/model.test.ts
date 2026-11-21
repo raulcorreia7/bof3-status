@@ -38,7 +38,7 @@ const category = (id: string): Measures =>
 const sum = (items: number[]) => items.reduce((a, b) => a + b, 0);
 const code = (
   c: { functions: number; exact: number; bytes: number; exactBytes: number },
-) => [c.functions, c.exact, c.bytes, c.exactBytes];
+): [number, number, number, number] => [c.functions, c.exact, c.bytes, c.exactBytes];
 const functions = file.units.flatMap((unit) => unit.functions);
 
 test("units name their image, and the image is the report's target", () => {
@@ -153,8 +153,8 @@ test("groups and targets partition the game code", () => {
   assert.equal(sum(model.targets.map((target) => target.game.count)), model.game.count);
   for (let index = 1; index < model.groups.length; index++) {
     assert.ok(
-      compareGroups(model.groups[index - 1], model.groups[index]) <= 0,
-      model.groups[index].key,
+      compareGroups(model.groups[index - 1]!, model.groups[index]!) <= 0,
+      model.groups[index]!.key,
     );
   }
 });
@@ -179,8 +179,8 @@ test("an executable's treemap holds one SDK group by library, in the SDK colour"
   const tree = gameImageTree(target, DARK, true);
   const group = tree.children!.filter((node) => node.id.startsWith("sdk:"));
   assert.equal(group.length, 1);
-  assert.ok(group[0].children!.length > 1);
-  const cells = group[0].children!.flatMap((library) => library.children!);
+  assert.ok(group[0]!.children!.length > 1);
+  const cells = group[0]!.children!.flatMap((library) => library.children!);
   assert.ok(cells.every((cell) => cell.itemStyle?.color === DARK.sdk));
   assert.equal(
     cells.reduce((total, cell) => total + cell.value, 0),
@@ -196,7 +196,7 @@ test("overview has one block per game part or image and one SDK block", () => {
     const tree = overviewTree(model, DARK, view);
     const sdk = tree.children!.filter((node) => node.ref.kind === "sdk");
     assert.equal(sdk.length, 1);
-    assert.equal(sdk[0].value, model.sdk.bytes);
+    assert.equal(sdk[0]!.value, model.sdk.bytes);
     const game = tree.children!.filter((node) => node.ref.kind !== "sdk");
     assert.ok(game.every((node) => node.ref.kind === view));
     if (view === "part") {

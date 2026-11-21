@@ -23,7 +23,7 @@ function squarify(
   y: number,
   w: number,
   h: number,
-): [number, number, number, number][] {
+): Box[] {
   const worst = (row: number[], side: number) => {
     const total = row.reduce((a, b) => a + b, 0);
     return Math.max(
@@ -32,11 +32,13 @@ function squarify(
       ),
     );
   };
-  const order = weights.map((_, index) => index).sort((a, b) => weights[b] - weights[a]);
+  const order = weights.map((_, index) => index).sort((a, b) =>
+    (weights[b] ?? 0) - (weights[a] ?? 0)
+  );
   const total = weights.reduce((a, b) => a + b, 0);
-  const out = weights.map((): [number, number, number, number] => [x, y, 0, 0]);
+  const out = weights.map((): Box => [x, y, 0, 0]);
   if (total <= 0 || w <= 0 || h <= 0) return out;
-  const areas = order.map((index) => (weights[index] * w * h) / total);
+  const areas = order.map((index) => ((weights[index] ?? 0) * w * h) / total);
   let start = 0;
   while (start < areas.length) {
     const side = Math.min(w, h);
@@ -50,9 +52,12 @@ function squarify(
     let offset = 0;
     row.forEach((area, k) => {
       const length = area / thickness;
-      out[order[start + k]] = w >= h
-        ? [x, y + offset, thickness, length]
-        : [x + offset, y, length, thickness];
+      const index = order[start + k];
+      if (index !== undefined) {
+        out[index] = w >= h
+          ? [x, y + offset, thickness, length]
+          : [x + offset, y, length, thickness];
+      }
       offset += length;
     });
     if (w >= h) [x, w] = [x + thickness, w - thickness];
@@ -73,15 +78,15 @@ export function grid(count: number, width: number, height: number): [pitch: numb
 
 function label(name: string, w: number, h: number): { lines: string[]; size: number } | null {
   const short = name.replace(".EMI", "");
-  const [head, slot] = short.split(" slot ");
+  const [head = short, slot] = short.split(" slot ");
   const two = slot === undefined ? null : [head, `slot ${slot}`];
-  const [stem, ext] = short.split(".");
+  const [stem = short, ext] = short.split(".");
   const halves = ext !== undefined
     ? [stem, ext]
     : short.includes(" ")
     ? null
     : [short.slice(0, short.length >> 1), short.slice(short.length >> 1)];
-  const [lead, rest] = short.split(": ");
+  const [lead = short, rest] = short.split(": ");
   const listed = rest === undefined ? null : [`${lead}:`, ...rest.split(", ")];
   const tries: [string[] | null, number][] = [
     [[name], LABEL_SIZE],
@@ -114,9 +119,11 @@ export const sorted = (rows: Fn[]): Fn[] =>
     || (a.address ?? Number.MAX_SAFE_INTEGER) - (b.address ?? Number.MAX_SAFE_INTEGER)
   );
 
+type Box = [number, number, number, number];
+
 const tip = (fn: Fn): string => `${fn.name} · ${STATUS[fn.status].label} · ${bytes(fn.bytes)}`;
 
-function block(rows: Fn[], name: string, box: number[]): { svg: string; fitted: boolean } {
+function block(rows: Fn[], name: string, box: Box): { svg: string; fitted: boolean } {
   const x = box[0] + INSET;
   const y = box[1] + INSET;
   const w = box[2] - 2 * INSET;
@@ -173,11 +180,13 @@ export function panel(
   const boxes = squarify(merged.map((b) => weightOf(b.rows)), x, top, width, height);
   const size = textWidth(title, 24) <= width ? 24 : 19;
   let svg = text(x, y, shorten(title, size, width), size, C.ink);
-  const leaders: [Block, number[]][] = [];
+  const leaders: [Block, Box][] = [];
   merged.forEach((b, index) => {
-    const drawn = block(b.rows, b.name, boxes[index]);
+    const box = boxes[index];
+    if (!box) return;
+    const drawn = block(b.rows, b.name, box);
     svg += drawn.svg;
-    if (!drawn.fitted) leaders.push([b, boxes[index]]);
+    if (!drawn.fitted) leaders.push([b, box]);
   });
   svg += frame(x - 1, top - 1, width + 2, height + 2, C.line);
   let bottom = top + height;

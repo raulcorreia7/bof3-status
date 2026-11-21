@@ -26,6 +26,17 @@ const readableOn = (fill: string): string => (luminance(fill) > 0.179 ? "#000000
 
 export type MapRef = { kind: "home" | "part" | "image" | "fn" | "sdk"; id: string; f?: string };
 
+const isRefKind = (kind: unknown): kind is MapRef["kind"] =>
+  kind === "home" || kind === "part" || kind === "image" || kind === "fn" || kind === "sdk";
+
+export function chartRef(click: { data?: { ref?: unknown } }): MapRef | undefined {
+  const ref = click.data?.ref;
+  if (typeof ref !== "object" || ref === null || !("kind" in ref) || !("id" in ref)) return;
+  const { kind, id } = ref;
+  if (!isRefKind(kind) || typeof id !== "string") return;
+  return "f" in ref && typeof ref.f === "string" ? { kind, id, f: ref.f } : { kind, id };
+}
+
 export interface MapNode {
   id: string;
   name: string;
@@ -293,7 +304,7 @@ function imageOverview(
   for (const node of children) {
     const fill = typeof node.itemStyle?.color === "string" ? node.itemStyle.color : tokens.ink;
     if (node.ref.kind === "image") {
-      const min = Math.max(60, node.name.split("\n")[0].length * 6 + 10);
+      const min = Math.max(60, node.name.split("\n")[0]!.length * 6 + 10);
       node.label = { show: hasRoom(width, height, node.value, size, min), color: readableOn(fill) };
     } else if (node.ref.kind === "sdk") {
       node.label = { show: true, color: readableOn(fill) };

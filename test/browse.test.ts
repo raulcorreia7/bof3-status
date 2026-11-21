@@ -13,6 +13,6 @@ test("address sorting is numeric across images", () => {
   const firstNull = rows.findIndex((fn) => fn.address === null);
   assert.ok(firstNull > 0);
   const addressed = rows.slice(0, firstNull).map((fn) => fn.address!);
-  assert.ok(addressed.every((address, index) => index === 0 || address >= addressed[index - 1]));
+  assert.ok(addressed.every((address, index) => index === 0 || address >= addressed[index - 1]!));
   assert.ok(rows.slice(firstNull).every((fn) => fn.address === null));
 });

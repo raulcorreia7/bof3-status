@@ -16,12 +16,12 @@ test("a function in a multi-function file is selected in the panel", () => {
   const view = inspector(ctx({ ...HOME, fn: unit, f: `${unit}#${fn}` }))!;
   const selected = view.selected!;
   assert.ok(selected);
-  const field = (label: string) => selected.fields.find((item) => item.label === label)!.value[0];
+  const field = (label: string) => selected.fields.find((item) => item.label === label)!.value[0]!;
   assert.equal(field("Name").text, fn);
   assert.equal(field("Address").text, "0x801D3568");
   assert.equal(field("Size").text, "60 B");
   assert.equal(field("Status").status, "pure");
-  assert.equal(view.fields.find((item) => item.label === "Address")!.value[0].text, "0x801D1394");
+  assert.equal(view.fields.find((item) => item.label === "Address")!.value[0]!.text, "0x801D1394");
 });
 
 test("a single-function file stays a file panel", () => {

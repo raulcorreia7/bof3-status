@@ -1,5 +1,5 @@
 import { createEffect, createMemo, For, type JSX, onMount, Show } from "solid-js";
-import { type MapRef, overviewTree, treemapOption } from "../charts/treemap.ts";
+import { chartRef, overviewTree, treemapOption } from "../charts/treemap.ts";
 import { inspector } from "../inspect.ts";
 import { sourceLine } from "../model/format.ts";
 import { HOME, sectionOfHash } from "../model/route.ts";
@@ -16,6 +16,7 @@ import { createPage, PageProvider, usePage } from "../state.ts";
 import { BROWSER, FOOT, HEAD, MAP, METHOD, SDK, SUMMARY } from "../strings.ts";
 import type { Mode } from "../theme/apply.ts";
 import type { Model } from "../types.ts";
+import { useViewport } from "../viewport.ts";
 import { Cards, Filters, Meters, Table, Text } from "./Basic.tsx";
 import { Chart, type ChartClick } from "./Chart.tsx";
 import { Domains } from "./Domains.tsx";
@@ -201,20 +202,21 @@ function Sections() {
 
 function HomeMap() {
   const page = usePage();
+  const viewport = useViewport();
   const option = createMemo(() =>
     treemapOption(
       overviewTree(
         page.model,
         page.tokens,
         page.route.by,
-        Math.min(window.innerWidth - 32, 992),
-        window.innerWidth < 700 ? 800 : 540,
+        Math.min(viewport.width() - 32, 992),
+        viewport.narrow() ? 800 : 540,
       ),
       page.tokens,
     )
   );
   const onClick = (params: ChartClick) => {
-    const ref = params.data?.ref as MapRef | undefined;
+    const ref = chartRef(params);
     if (ref?.kind === "part") page.go({ view: { kind: "part", key: ref.id }, fn: null, f: null });
     else if (ref?.kind === "image") {
       page.go({ view: { kind: "image", id: ref.id }, fn: null, f: null });
@@ -249,7 +251,7 @@ function HomeMap() {
       </ul>
       <Chart
         option={option()}
-        height={window.innerWidth < 700 ? 800 : 540}
+        height={viewport.narrow() ? 800 : 540}
         label={MAP.homeChartLabel}
         onClick={onClick}
         replace

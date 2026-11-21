@@ -209,9 +209,9 @@ export function Table(props: Props<"table">) {
                     <For each={row.cells}>
                       {(cell, index) => (
                         <td
-                          data-label={props.data().columns[index()].label}
+                          data-label={props.data().columns[index()]?.label}
                           class={`px-3 py-1.5 whitespace-nowrap ${
-                            align(props.data().columns[index()])
+                            align(props.data().columns[index()] ?? {})
                           }`}
                         >
                           <Parts parts={cell} />

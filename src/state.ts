@@ -8,20 +8,12 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
+import { currentHash, readRoute, scrollAfterDraw, watchRoute, writeHash } from "./browser.ts";
 import { PAGE_STEP } from "./model/browse.ts";
-import {
-  formatHash,
-  isLegacyPath,
-  pagePath,
-  parseHash,
-  type Route,
-  sectionHash,
-  sectionOfHash,
-} from "./model/route.ts";
+import { hrefOf, type Route, step } from "./model/route.ts";
 import { applyMode, type Mode, saveMode, storedMode, watchSystemScheme } from "./theme/apply.ts";
 import type { Scheme, Tokens } from "./theme/tokens.ts";
 import type { Model } from "./types.ts";
-import { scrollToSection } from "./views/scroll.ts";
 import type { Ctx } from "./viewtypes.ts";
 
 type Navigate = (patch: Partial<Route>, replace?: boolean, section?: string) => void;
@@ -45,59 +37,18 @@ export function usePage(): Page {
 }
 
 export function createPage(model: Model): Page {
-  const routeFromLocation = () => {
-    const current = window.location.hash;
-    const next = parseHash(current);
-    if (isLegacyPath(current)) {
-      window.history.replaceState(
-        null,
-        "",
-        `${window.location.pathname}${window.location.search}${formatHash(next)}`,
-      );
-    }
-    return next;
-  };
-  const [route, setRoute] = createStore<Route>(routeFromLocation());
-  const sync = () => {
-    const next = routeFromLocation();
-    setRoute(reconcile(next));
-    const section = sectionOfHash(window.location.hash) ?? (next.q ? "find" : null);
-    if (section) requestAnimationFrame(() => scrollToSection(section, false));
-  };
-  window.addEventListener("hashchange", sync);
-  window.addEventListener("popstate", sync);
-  onCleanup(() => {
-    window.removeEventListener("hashchange", sync);
-    window.removeEventListener("popstate", sync);
-  });
+  const [route, setRoute] = createStore<Route>(readRoute());
+  onCleanup(watchRoute((next) => setRoute(reconcile(next))));
 
   const go: Navigate = (patch, replace = false, section) => {
-    const current = unwrap(route);
-    // A copy: the store adopts the objects it is given and later changes them in place, so a
-    // shared constant such as HOME.view must never reach it.
-    const next = structuredClone({ ...current, ...patch });
-    if (section && next.view.kind === "home") next.fn = null;
-    const newPage = pagePath(next.view) !== pagePath(current.view);
-    const hash = section && next.view.kind === "home"
-      ? sectionHash(next, section)
-      : formatHash(next);
-    if (hash !== window.location.hash) {
-      const url = hash || `${window.location.pathname}${window.location.search}`;
-      if (replace) window.history.replaceState(null, "", url);
-      else window.history.pushState(null, "", url);
-      setRoute(reconcile(next));
+    const next = step(unwrap(route), patch, section);
+    if (next.hash !== currentHash()) {
+      writeHash(next.hash, replace);
+      setRoute(reconcile(next.route));
     }
-    // After the new page has drawn, so the browser does not move the scroll to keep content in view.
-    if (section) requestAnimationFrame(() => scrollToSection(section));
-    else if (newPage) requestAnimationFrame(() => window.scrollTo(0, 0));
+    scrollAfterDraw(section, next.newPage);
   };
-  const href = (patch: Partial<Route>, section?: string) => {
-    const next = { ...route, ...patch };
-    const hash = section && next.view.kind === "home"
-      ? sectionHash(next, section)
-      : formatHash(next);
-    return hash || "#";
-  };
+  const href = (patch: Partial<Route>, section?: string) => hrefOf(route, patch, section);
 
   const [mode, setModeSignal] = createSignal<Mode>(storedMode());
   const [applied, setApplied] = createSignal(applyMode(mode()));
