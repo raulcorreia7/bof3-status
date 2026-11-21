@@ -15,7 +15,7 @@ import type {
 import { hex, share } from "./format.ts";
 import { compareGroups, describeGroup, groupKey } from "./groups.ts";
 import { ReportSchema } from "./schema.ts";
-import { isDone, STATUS, STATUSES } from "./status.ts";
+import { isDone, STATUS } from "./status.ts";
 
 type ReportUnit = Report["units"][number];
 type ReportFunction = ReportUnit["functions"][number];
@@ -28,9 +28,15 @@ const PSYQ_OBJECT = /^toolchains\/psyq\/([^/]+)\/([^/]+)\//;
 const EXE_NAME: Record<string, string> = { slus_004_22: "SLUS_004.22", logo: "LOGO.EXE" };
 
 function tally(functions: Fn[]): Tally {
-  const statuses = Object.fromEntries(
-    STATUSES.map((key) => [key, { functions: 0, bytes: 0 }]),
-  ) as Tally["statuses"];
+  const zero = () => ({ functions: 0, bytes: 0 });
+  const statuses: Tally["statuses"] = {
+    pure: zero(),
+    nonmatching: zero(),
+    open: zero(),
+    object: zero(),
+    assembly: zero(),
+    asm: zero(),
+  };
   let bytes = 0;
   let done = 0;
   let doneBytes = 0;
@@ -68,7 +74,7 @@ function targetName(id: string, archives: Map<string, number>): string {
 function addressOf(name: string): number | null {
   const stem = name.slice(name.lastIndexOf("/") + 1);
   const found = /^func_([0-9A-F]{8})$/.exec(stem) ?? /@0x([0-9A-Fa-f]{1,8})$/.exec(stem);
-  return found ? parseInt(found[1], 16) : null;
+  return found ? parseInt(found[1] ?? "", 16) : null;
 }
 
 export function unitTarget(name: string): string {
@@ -102,7 +108,7 @@ function unitStatus(kind: Part, functions: Fn[], matched: number, tier: Tier | n
 
 function sdkOrigin(source: string, info: SdkInfo | undefined): Origin {
   const found = PSYQ_OBJECT.exec(source);
-  const version = found ? found[1] : null;
+  const version = found?.[1] ?? null;
   if (info) {
     return {
       library: info.library || ASSEMBLY_LIBRARY,
@@ -112,7 +118,7 @@ function sdkOrigin(source: string, info: SdkInfo | undefined): Origin {
     };
   }
   return found
-    ? { library: found[2], member: "", version, tier: "object" }
+    ? { library: found[2] ?? ASSEMBLY_LIBRARY, member: "", version, tier: "object" }
     : { library: ASSEMBLY_LIBRARY, member: "", version: null, tier: "assembly" };
 }
 

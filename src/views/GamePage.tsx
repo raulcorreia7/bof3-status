@@ -10,12 +10,13 @@ import {
   Show,
 } from "solid-js";
 import type { ChartOption } from "../charts/register.ts";
-import { type MapNode, type MapRef, treemapOption } from "../charts/treemap.ts";
+import { chartRef, type MapNode, treemapOption } from "../charts/treemap.ts";
 import { PAGE_STEP } from "../model/browse.ts";
 import { bytes } from "../model/format.ts";
 import { usePage } from "../state.ts";
 import { MAP } from "../strings.ts";
 import type { Tokens } from "../theme/tokens.ts";
+import { useViewport } from "../viewport.ts";
 import type { GamePage } from "../viewtypes.ts";
 import { Chart, type ChartClick } from "./Chart.tsx";
 import { Jump, Meter, StatusChip, StatusKey } from "./ui.tsx";
@@ -189,8 +190,9 @@ function Canvas(props: { tree: Accessor<MapNode>; label: string }) {
     built = { view, tokens, option: treemapOption(view, tokens) };
     return built.option;
   });
+  const viewport = useViewport();
   const onClick = (params: ChartClick) => {
-    const ref = params.data?.ref as MapRef | undefined;
+    const ref = chartRef(params);
     if (ref?.kind === "fn") page.go({ fn: ref.id, f: ref.f ?? null });
     else if (ref?.kind === "image") {
       page.go({ view: { kind: "image", id: ref.id }, fn: null, f: null });
@@ -199,7 +201,7 @@ function Canvas(props: { tree: Accessor<MapNode>; label: string }) {
   return (
     <Chart
       option={option()}
-      height={window.innerWidth < 700 ? 420 : 620}
+      height={viewport.narrow() ? 420 : 620}
       label={props.label}
       onClick={onClick}
       crossfade={!calm()}

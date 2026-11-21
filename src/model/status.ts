@@ -36,17 +36,19 @@ export const STATUSES: readonly Status[] = STATUS_TABLE.map((entry) => entry.key
 export const TIERS: readonly Tier[] = ["object", "assembly"];
 
 export const isStatus = (value: string): value is Status => Object.hasOwn(STATUS, value);
+const nonzero = (pairs: [Status, number][]): [Status, number][] => pairs.filter(([, n]) => n);
+
 export const codeCounts = (code: Code): [Status, number][] =>
-  ([["pure", code.exact], ["nonmatching", code.draft], [
+  nonzero([["pure", code.exact], ["nonmatching", code.draft], [
     "open",
     code.functions - code.exact - code.draft,
-  ]] as [Status, number][]).filter(([, count]) => count);
+  ]]);
 
 export const codeSizes = (code: Code): [Status, number][] =>
-  ([["pure", code.exactBytes], ["nonmatching", code.draftBytes], [
+  nonzero([["pure", code.exactBytes], ["nonmatching", code.draftBytes], [
     "open",
     code.bytes - code.exactBytes - code.draftBytes,
-  ]] as [Status, number][]).filter(([, size]) => size);
+  ]]);
 
 export const isDone = (fn: Pick<Fn, "kind" | "status" | "fuzzy">): boolean =>
   STATUS[fn.status].doneIn.includes(fn.kind) && fn.fuzzy === 100;

@@ -105,3 +105,28 @@ export function formatHash(route: Route): string {
   const query = params.toString();
   return path || query ? `#${path}${query ? `?${query}` : ""}` : "";
 }
+
+export interface Step {
+  route: Route;
+  hash: string;
+  newPage: boolean;
+}
+
+// A copy: the store adopts the objects it is given and later changes them in place, so a
+// shared constant such as HOME.view must never reach it.
+export function step(current: Route, patch: Partial<Route>, section?: string): Step {
+  const route = structuredClone({ ...current, ...patch });
+  const onHome = route.view.kind === "home";
+  if (section && onHome) route.fn = null;
+  return {
+    route,
+    hash: section && onHome ? sectionHash(route, section) : formatHash(route),
+    newPage: pagePath(route.view) !== pagePath(current.view),
+  };
+}
+
+export function hrefOf(route: Route, patch: Partial<Route>, section?: string): string {
+  const next = { ...route, ...patch };
+  const hash = section && next.view.kind === "home" ? sectionHash(next, section) : formatHash(next);
+  return hash || "#";
+}

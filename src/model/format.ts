@@ -35,7 +35,7 @@ export function sourceLine(
   const when = new Date(source.published);
   if (Number.isNaN(when.getTime())) return null;
   return {
-    name: source.repository.split("/")[1],
+    name: source.repository.split("/")[1] ?? source.repository,
     sha: source.commit.slice(0, 7),
     href: `https://github.com/${source.repository}/commit/${source.commit}`,
     iso: when.toISOString(),

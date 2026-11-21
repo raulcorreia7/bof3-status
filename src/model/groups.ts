@@ -42,7 +42,7 @@ export const describeGroup = (
   key: string,
 ): { key: string; label: string; note: string; tiles: boolean } => ({
   key,
-  label: GROUP_LABEL[key] ?? GROUP_LABEL[OTHER],
+  label: GROUP_LABEL[key] ?? GROUP_LABEL[OTHER] ?? "",
   note: GROUP_NOTE[key] ?? "",
   tiles: GROUP_RULES.some((rule) => rule.key === key && rule.tiles),
 });
