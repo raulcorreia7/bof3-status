@@ -7,7 +7,7 @@
 //
 // Older links still open: #target/<id> is the image page, #group/<key> the part page.
 
-export type View = { kind: "home" } | { kind: "image"; id: string } | { kind: "part"; key: string };
+export type View = { type: "home" } | { type: "image"; id: string } | { type: "part"; key: string };
 
 export type SortKey = "address" | "size" | "name" | "status";
 
@@ -25,7 +25,7 @@ export interface Route {
 }
 
 export const HOME: Route = {
-  view: { kind: "home" },
+  view: { type: "home" },
   fn: null,
   f: null,
   q: "",
@@ -62,16 +62,16 @@ export const isLegacyPath = (hash: string): boolean => /^#(target|group)\//.test
 export function parseHash(hash: string): Route {
   const [path = "", query = ""] = hash.replace(/^#/, "").split("?");
   const params = new URLSearchParams(query);
-  const [kind, ...rest] = path.split("/").filter(Boolean).map(decodeURIComponent);
+  const [type, ...rest] = path.split("/").filter(Boolean).map(decodeURIComponent);
   const id = rest.join("/");
-  const view: View = id && (kind === "image" || kind === "target")
-    ? { kind: "image", id }
-    : id && (kind === "part" || kind === "group")
-    ? { kind: "part", key: id }
-    : { kind: "home" };
+  const view: View = id && (type === "image" || type === "target")
+    ? { type: "image", id }
+    : id && (type === "part" || type === "group")
+    ? { type: "part", key: id }
+    : { type: "home" };
   return {
     view,
-    fn: kind === "fn" && id ? id : params.get("fn"),
+    fn: type === "fn" && id ? id : params.get("fn"),
     f: params.get("f"),
     q: params.get("q") ?? "",
     by: params.get("by") === "image" ? "image" : "part",
@@ -84,8 +84,8 @@ export function parseHash(hash: string): Route {
 }
 
 export function pagePath(view: View): string {
-  if (view.kind === "image") return `image/${encodeURIComponent(view.id)}`;
-  if (view.kind === "part") return `part/${encodeURIComponent(view.key)}`;
+  if (view.type === "image") return `image/${encodeURIComponent(view.id)}`;
+  if (view.type === "part") return `part/${encodeURIComponent(view.key)}`;
   return "";
 }
 
@@ -116,7 +116,7 @@ export interface Step {
 // shared constant such as HOME.view must never reach it.
 export function step(current: Route, patch: Partial<Route>, section?: string): Step {
   const route = structuredClone({ ...current, ...patch });
-  const onHome = route.view.kind === "home";
+  const onHome = route.view.type === "home";
   if (section && onHome) route.fn = null;
   return {
     route,
@@ -127,6 +127,6 @@ export function step(current: Route, patch: Partial<Route>, section?: string): S
 
 export function hrefOf(route: Route, patch: Partial<Route>, section?: string): string {
   const next = { ...route, ...patch };
-  const hash = section && next.view.kind === "home" ? sectionHash(next, section) : formatHash(next);
+  const hash = section && next.view.type === "home" ? sectionHash(next, section) : formatHash(next);
   return hash || "#";
 }

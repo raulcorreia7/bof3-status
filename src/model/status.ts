@@ -5,13 +5,13 @@ interface StatusRow {
   key: Status;
   label: string;
   color: string;
-  doneIn: readonly Fn["kind"][];
+  doneIn: readonly Fn["type"][];
 }
 
 export const statusProp = (key: string): string => `--st-${key.replaceAll("_", "-")}`;
 export const statusVar = (key: string): string => `var(${statusProp(key)})`;
 
-const row = (key: Status, doneIn: readonly Fn["kind"][]): StatusRow => ({
+const row = (key: Status, doneIn: readonly Fn["type"][]): StatusRow => ({
   key,
   label: STATUS_LABEL[key],
   color: statusVar(key),
@@ -50,5 +50,5 @@ export const codeSizes = (code: Code): [Status, number][] =>
     code.bytes - code.exactBytes - code.draftBytes,
   ]]);
 
-export const isDone = (fn: Pick<Fn, "kind" | "status" | "fuzzy">): boolean =>
-  STATUS[fn.status].doneIn.includes(fn.kind) && fn.fuzzy === 100;
+export const isDone = (fn: Pick<Fn, "type" | "status" | "fuzzy">): boolean =>
+  STATUS[fn.status].doneIn.includes(fn.type) && fn.fuzzy === 100;

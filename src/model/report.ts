@@ -84,21 +84,21 @@ export function unitTarget(name: string): string {
   return parts.slice(0, -1).join("/");
 }
 
-function statusOf(kind: Part, tier: Tier | null, fuzzy: number): Fn["status"] {
-  if (kind === "game") return fuzzy === 100 ? "pure" : fuzzy > 0 ? "nonmatching" : "open";
-  if (kind === "hand") return fuzzy === 100 ? "asm" : "assembly";
+function statusOf(type: Part, tier: Tier | null, fuzzy: number): Fn["status"] {
+  if (type === "game") return fuzzy === 100 ? "pure" : fuzzy > 0 ? "nonmatching" : "open";
+  if (type === "hand") return fuzzy === 100 ? "asm" : "assembly";
   return tier === "object" ? "object" : "assembly";
 }
 
-function unitStatus(kind: Part, functions: Fn[], matched: number, tier: Tier | null): Fn["status"] {
-  if (kind === "game") {
+function unitStatus(type: Part, functions: Fn[], matched: number, tier: Tier | null): Fn["status"] {
+  if (type === "game") {
     return functions.length > 0 && matched === functions.length
       ? "pure"
       : matched > 0 || functions.some((fn) => fn.status === "nonmatching")
       ? "nonmatching"
       : "open";
   }
-  if (kind === "hand") {
+  if (type === "hand") {
     return functions.length > 0 && matched === functions.length
       ? "asm"
       : "assembly";
@@ -137,12 +137,12 @@ function buildFunction(
   fn: ReportFunction,
   unit: Unit,
   target: Target,
-  kind: Part,
+  type: Part,
   origin: Origin | null,
 ): Fn {
   const address = addressOf(fn.name);
   const fuzzy = fn.fuzzy_match_percent ?? 0;
-  const status = statusOf(kind, origin?.tier ?? null, fuzzy);
+  const status = statusOf(type, origin?.tier ?? null, fuzzy);
   const result: Fn = {
     id: `${unit.id}#${fn.name}`,
     unit: unit.id,
@@ -155,7 +155,7 @@ function buildFunction(
     fuzzy,
     fuzzyReported: fn.fuzzy_match_percent !== undefined,
     status,
-    kind,
+    type,
     key: "",
     library: origin?.library,
     member: origin?.member,
@@ -169,7 +169,7 @@ function buildFunction(
     status,
     STATUS[status].label,
     target.name,
-    kind,
+    type,
     unit.name,
     origin?.library ?? "",
     origin?.version ?? "",
@@ -179,19 +179,19 @@ function buildFunction(
 
 function buildUnit(unit: ReportUnit, target: Target): Unit {
   const part = unit.metadata.progress_categories?.[0] ?? "";
-  const kind = (Object.keys(CATEGORY) as (keyof typeof CATEGORY)[]).find((key) =>
+  const type = (Object.keys(CATEGORY) as (keyof typeof CATEGORY)[]).find((key) =>
     CATEGORY[key] === part
   );
-  if (!kind) throw new Error(`report unit ${unit.name} has unknown category ${part || "(none)"}`);
+  if (!type) throw new Error(`report unit ${unit.name} has unknown category ${part || "(none)"}`);
   const source = unit.metadata.source_path ?? "";
-  const origin = kind === "sdk" ? sdkOrigin(source, unit.metadata.sdk) : null;
+  const origin = type === "sdk" ? sdkOrigin(source, unit.metadata.sdk) : null;
   const stem = unit.name.slice(target.id.length + 1);
   const result: Unit = {
     id: unit.name,
     target: target.id,
-    name: kind === "sdk" ? stem : source || stem,
+    name: type === "sdk" ? stem : source || stem,
     source: source || null,
-    kind,
+    type,
     addr: "",
     address: null,
     bytes: 0,
@@ -206,7 +206,7 @@ function buildUnit(unit: ReportUnit, target: Target): Unit {
     tier: origin?.tier,
     version: origin?.version ?? null,
   };
-  result.functions = unit.functions.map((fn) => buildFunction(fn, result, target, kind, origin));
+  result.functions = unit.functions.map((fn) => buildFunction(fn, result, target, type, origin));
   result.functions.sort((a, b) =>
     a.offset - b.offset || (a.address ?? 0) - (b.address ?? 0) || a.name.localeCompare(b.name)
   );
@@ -225,7 +225,7 @@ function buildUnit(unit: ReportUnit, target: Target): Unit {
   }
   result.address = address;
   result.addr = address === null ? "" : hex(address);
-  result.status = unitStatus(kind, result.functions, result.matched, origin?.tier ?? null);
+  result.status = unitStatus(type, result.functions, result.matched, origin?.tier ?? null);
   return result;
 }
 
@@ -339,7 +339,7 @@ function buildModel(report: Report): Model {
       if (b.address === null) return -1;
       return a.address - b.address || a.name.localeCompare(b.name);
     });
-    target.game = tally(target.functions.filter((fn) => fn.kind === "game"));
+    target.game = tally(target.functions.filter((fn) => fn.type === "game"));
     target.all = tally(target.functions);
     target.code = {
       functions: target.game.count,
@@ -359,7 +359,7 @@ function buildModel(report: Report): Model {
   const groups: Group[] = [...new Set(targets.map((target) => target.group))]
     .map((key) => {
       const members = targets.filter((target) => target.group === key).sort(bySize);
-      const game = members.flatMap((target) => target.functions.filter((fn) => fn.kind === "game"));
+      const game = members.flatMap((target) => target.functions.filter((fn) => fn.type === "game"));
       return {
         ...describeGroup(key),
         targets: members,
@@ -370,9 +370,9 @@ function buildModel(report: Report): Model {
     .sort(compareGroups);
   for (const group of groups) for (const target of group.targets) target.groupLabel = group.label;
 
-  const game = measured(functions.filter((fn) => fn.kind === "game"), gameSource);
-  const sdk = measured(functions.filter((fn) => fn.kind === "sdk"), sdkSource);
-  const hand = measured(functions.filter((fn) => fn.kind === "hand"), handSource);
+  const game = measured(functions.filter((fn) => fn.type === "game"), gameSource);
+  const sdk = measured(functions.filter((fn) => fn.type === "sdk"), sdkSource);
+  const hand = measured(functions.filter((fn) => fn.type === "hand"), handSource);
   const code = addCode(targets.map((target) => target.code));
   return {
     source: report.source ?? null,
@@ -393,6 +393,6 @@ function buildModel(report: Report): Model {
     targetById,
     unitById,
     functions,
-    libraries: buildLibraries(functions.filter((fn) => fn.kind === "sdk")),
+    libraries: buildLibraries(functions.filter((fn) => fn.type === "sdk")),
   };
 }

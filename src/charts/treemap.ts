@@ -24,17 +24,17 @@ const luminance = (fill: string): number => {
 
 const readableOn = (fill: string): string => (luminance(fill) > 0.179 ? "#000000" : "#ffffff");
 
-export type MapRef = { kind: "home" | "part" | "image" | "fn" | "sdk"; id: string; f?: string };
+export type MapRef = { type: "home" | "part" | "image" | "fn" | "sdk"; id: string; f?: string };
 
-const isRefKind = (kind: unknown): kind is MapRef["kind"] =>
-  kind === "home" || kind === "part" || kind === "image" || kind === "fn" || kind === "sdk";
+const isRefType = (type: unknown): type is MapRef["type"] =>
+  type === "home" || type === "part" || type === "image" || type === "fn" || type === "sdk";
 
 export function chartRef(click: { data?: { ref?: unknown } }): MapRef | undefined {
   const ref = click.data?.ref;
-  if (typeof ref !== "object" || ref === null || !("kind" in ref) || !("id" in ref)) return;
-  const { kind, id } = ref;
-  if (!isRefKind(kind) || typeof id !== "string") return;
-  return "f" in ref && typeof ref.f === "string" ? { kind, id, f: ref.f } : { kind, id };
+  if (typeof ref !== "object" || ref === null || !("type" in ref) || !("id" in ref)) return;
+  const { type, id } = ref;
+  if (!isRefType(type) || typeof id !== "string") return;
+  return "f" in ref && typeof ref.f === "string" ? { type, id, f: ref.f } : { type, id };
 }
 
 export interface MapNode {
@@ -64,7 +64,7 @@ const fnNode = (fn: Fn, tokens: Tokens): MapNode => ({
   id: `f:${fn.id}`,
   name: fn.name,
   value: Math.max(fn.bytes, MIN_WEIGHT),
-  ref: { kind: "fn", id: fn.unit, f: fn.id },
+  ref: { type: "fn", id: fn.unit, f: fn.id },
   tip: fnTip(fn),
   itemStyle: { color: tokens.status[fn.status] },
   label: { color: readableOn(tokens.status[fn.status]) },
@@ -82,7 +82,7 @@ const sdkNode = (fn: Fn, tokens: Tokens): MapNode => ({
   id: `f:${fn.id}`,
   name: fn.member || fn.name,
   value: Math.max(fn.bytes, MIN_WEIGHT),
-  ref: { kind: "fn", id: fn.unit, f: fn.id },
+  ref: { type: "fn", id: fn.unit, f: fn.id },
   tip: sdkTip(fn),
   itemStyle: { color: tokens.sdk },
   label: { show: true, color: readableOn(tokens.sdk) },
@@ -101,7 +101,7 @@ export function sdkGroupTree(target: Target, tokens: Tokens, named = false): Map
 
 function sdkTree(functions: Fn[], id: string, title: string, tokens: Tokens): MapNode | null {
   const libraries = new Map<string, Fn[]>();
-  for (const fn of functions.filter((item) => item.kind === "sdk")) {
+  for (const fn of functions.filter((item) => item.type === "sdk")) {
     const name = fn.library ?? ASSEMBLY_LIBRARY;
     const list = libraries.get(name);
     if (list) list.push(fn);
@@ -117,7 +117,7 @@ function sdkTree(functions: Fn[], id: string, title: string, tokens: Tokens): Ma
       id: `sdklib:${id}:${name}`,
       name,
       value: total(cells),
-      ref: { kind: "sdk", id: name },
+      ref: { type: "sdk", id: name },
       tip: `<b>${escapeText(name)}</b><br>${escapeText(SDK.libraryTip(members.length, size))}`,
       itemStyle: { color: "transparent", borderColor: tokens.bg, borderWidth: 1, gapWidth: 1 },
       label: { show: false },
@@ -134,7 +134,7 @@ function sdkTree(functions: Fn[], id: string, title: string, tokens: Tokens): Ma
     id: `sdk:${id}`,
     name: title,
     value: total(children),
-    ref: { kind: "sdk", id },
+    ref: { type: "sdk", id },
     tip: `<b>${escapeText(title)}</b>`,
     itemStyle: { color: "transparent", borderColor: tokens.bg, borderWidth: 2, gapWidth: 1 },
     label: { show: false },
@@ -150,7 +150,7 @@ function sdkTree(functions: Fn[], id: string, title: string, tokens: Tokens): Ma
 }
 
 export function gameImageTree(target: Target, tokens: Tokens, withSdk = false): MapNode {
-  const children = target.functions.filter((fn) => fn.kind === "game").map((fn) =>
+  const children = target.functions.filter((fn) => fn.type === "game").map((fn) =>
     fnNode(fn, tokens)
   );
   const sdk = withSdk ? sdkGroupTree(target, tokens) : null;
@@ -159,7 +159,7 @@ export function gameImageTree(target: Target, tokens: Tokens, withSdk = false): 
     id: `image:${target.id}`,
     name: target.name,
     value: children.reduce((sum, child) => sum + child.value, 0),
-    ref: { kind: "image", id: target.id },
+    ref: { type: "image", id: target.id },
     tip: `<b>${escapeText(target.name)}</b><br>${number(target.code.exact)} of ${
       number(target.code.functions)
     } rebuilt in C`,
@@ -179,7 +179,7 @@ export function gamePartTree(group: Group, tokens: Tokens): MapNode {
     id: `part:${group.key}`,
     name: group.label,
     value: images.reduce((sum, image) => sum + image.value, 0),
-    ref: { kind: "part", id: group.key },
+    ref: { type: "part", id: group.key },
     tip: "",
     children: images,
   };
@@ -216,12 +216,12 @@ function partOverview(model: Model, tokens: Tokens, width: number, height: numbe
     const scale = Math.sqrt(group.code.bytes / gameSize);
     const images = imageOverview(model, tokens, width * scale, height * scale, group.key)
       .children!
-      .filter((node) => node.ref.kind === "image");
+      .filter((node) => node.ref.type === "image");
     return {
       id: `part:${group.key}`,
       name: group.label,
       value: total(images),
-      ref: { kind: "part" as const, id: group.key },
+      ref: { type: "part" as const, id: group.key },
       tip: group.note,
       children: images,
     };
@@ -232,7 +232,7 @@ function partOverview(model: Model, tokens: Tokens, width: number, height: numbe
     id: `library:${library.name}`,
     name: library.name,
     value: library.bytes,
-    ref: { kind: "sdk", id: library.name },
+    ref: { type: "sdk", id: library.name },
     tip: escapeText(library.name),
     itemStyle: { color: tokens.sdk },
     label: {
@@ -245,7 +245,7 @@ function partOverview(model: Model, tokens: Tokens, width: number, height: numbe
       id: "sdk:all",
       name: SDK.group,
       value: total(libraries),
-      ref: { kind: "sdk", id: "all" },
+      ref: { type: "sdk", id: "all" },
       tip: SDK.group,
       children: libraries,
     });
@@ -254,7 +254,7 @@ function partOverview(model: Model, tokens: Tokens, width: number, height: numbe
     id: "home:part",
     name: "Game",
     value: total(children),
-    ref: { kind: "home", id: "part" },
+    ref: { type: "home", id: "part" },
     tip: "",
     children,
   };
@@ -277,7 +277,7 @@ function imageOverview(
       id: `image:${target.id}`,
       name: `${shown}\n${rebuilt}%`,
       value: code.bytes,
-      ref: { kind: "image", id: target.id },
+      ref: { type: "image", id: target.id },
       tip: `${escapeText(shown)}<br>${rebuilt}% rebuilt in C by size`,
       itemStyle: { color: fill },
       label: { color: readableOn(fill) },
@@ -286,7 +286,7 @@ function imageOverview(
   const sdkBytes = part
     ? targets.reduce(
       (sum, target) =>
-        sum + target.functions.filter((fn) => fn.kind === "sdk").reduce((n, fn) => n + fn.bytes, 0),
+        sum + target.functions.filter((fn) => fn.type === "sdk").reduce((n, fn) => n + fn.bytes, 0),
       0,
     )
     : model.sdk.bytes;
@@ -295,7 +295,7 @@ function imageOverview(
       id: "sdk:all",
       name: "PsyQ SDK",
       value: sdkBytes,
-      ref: { kind: "sdk", id: "all" },
+      ref: { type: "sdk", id: "all" },
       tip: SDK.group,
       itemStyle: { color: tokens.sdk },
     });
@@ -303,10 +303,10 @@ function imageOverview(
   const size = total(children);
   for (const node of children) {
     const fill = typeof node.itemStyle?.color === "string" ? node.itemStyle.color : tokens.ink;
-    if (node.ref.kind === "image") {
+    if (node.ref.type === "image") {
       const min = Math.max(60, node.name.split("\n")[0]!.length * 6 + 10);
       node.label = { show: hasRoom(width, height, node.value, size, min), color: readableOn(fill) };
-    } else if (node.ref.kind === "sdk") {
+    } else if (node.ref.type === "sdk") {
       node.label = { show: true, color: readableOn(fill) };
     }
   }
@@ -314,7 +314,7 @@ function imageOverview(
     id: `home:${part ?? "image"}`,
     name: "Game",
     value: size,
-    ref: { kind: "home", id: "image" },
+    ref: { type: "home", id: "image" },
     tip: "",
     children,
   };
@@ -375,7 +375,7 @@ export function treemapOption(view: MapNode, tokens: Tokens): ChartOption {
           fontSize: 10,
         },
         upperLabel: upper,
-        levels: view.ref.kind === "home"
+        levels: view.ref.type === "home"
           ? [hidden, ...(view.ref.id === "part" ? [parent] : []), {
             ...leaf(true),
             label: {
@@ -384,7 +384,7 @@ export function treemapOption(view: MapNode, tokens: Tokens): ChartOption {
               fontWeight: "bold",
             },
           }]
-          : view.ref.kind === "part"
+          : view.ref.type === "part"
           ? [hidden, parent, leaf(false), leaf(false)]
           : [hidden, leaf(true), leaf(false), leaf(false)],
         data: view.children,

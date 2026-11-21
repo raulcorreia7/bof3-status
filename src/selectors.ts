@@ -80,13 +80,13 @@ export function overviewMeter({ model }: Ctx): Views["meters"] {
 }
 
 const sdkVersion = (functions: Fn[]): string =>
-  functions.find((fn) => fn.kind === "sdk" && fn.version)?.version ?? "";
+  functions.find((fn) => fn.type === "sdk" && fn.version)?.version ?? "";
 
 const sdkSplit = (functions: Fn[]) => {
   const linked = { units: 0, bytes: 0 };
   const split = { units: 0, bytes: 0 };
   for (const fn of functions) {
-    if (fn.kind !== "sdk") continue;
+    if (fn.type !== "sdk") continue;
     const side = fn.tier === "object" ? linked : split;
     side.units += 1;
     side.bytes += fn.bytes;
@@ -109,7 +109,7 @@ export const apart = ({ model }: Ctx): Views["text"] => ({
 });
 
 const gameMapRoute = (
-  view: Extract<Route["view"], { kind: "image" | "part" }>,
+  view: Extract<Route["view"], { type: "image" | "part" }>,
 ): Partial<Route> => ({
   view,
   fn: null,
@@ -134,7 +134,7 @@ export function domains({ model }: Ctx): Views["domains"] {
       );
       return {
         key: group.key,
-        title: { label: group.label, to: gameMapRoute({ kind: "part", key: group.key }) },
+        title: { label: group.label, to: gameMapRoute({ type: "part", key: group.key }) },
         note: group.note,
         percent: `${percent(group.code.exact, group.code.functions, 1)}%`,
         line,
@@ -154,7 +154,7 @@ export function domains({ model }: Ctx): Views["domains"] {
           ),
           width: Math.max((100 * target.code.bytes) / peak, 2),
           parts: codeMeter(target.code, target.name).parts,
-          to: gameMapRoute({ kind: "image", id: target.id }),
+          to: gameMapRoute({ type: "image", id: target.id }),
         })),
       };
     });
@@ -175,7 +175,7 @@ export function gamePage({ model, route, tokens }: Ctx): GamePage | null {
     inPart: false,
   };
   const page = (code: Code, functions: Fn[], line: string, targets: Target[]) => {
-    const sdk = targets.flatMap((target) => target.functions.filter((fn) => fn.kind === "sdk"));
+    const sdk = targets.flatMap((target) => target.functions.filter((fn) => fn.type === "sdk"));
     return {
       found: true,
       percent: `${percent(code.exactBytes, code.bytes, 1)}%`,
@@ -194,7 +194,7 @@ export function gamePage({ model, route, tokens }: Ctx): GamePage | null {
       functions,
     };
   };
-  if (route.view.kind === "part") {
+  if (route.view.type === "part") {
     const key = route.view.key;
     const group = model.groups.find((item) => item.key === key);
     if (!group) {
@@ -209,7 +209,7 @@ export function gamePage({ model, route, tokens }: Ctx): GamePage | null {
     return {
       ...page(
         group.code,
-        group.targets.flatMap((target) => target.functions.filter((fn) => fn.kind === "game")),
+        group.targets.flatMap((target) => target.functions.filter((fn) => fn.type === "game")),
         MAP.group(group.code.exact, group.code.functions, group.code.bytes, images.length),
         group.targets,
       ),
@@ -220,7 +220,7 @@ export function gamePage({ model, route, tokens }: Ctx): GamePage | null {
       inPart: true,
     };
   }
-  if (route.view.kind === "image") {
+  if (route.view.type === "image") {
     const id = route.view.id;
     const target = model.targetById.get(id);
     if (!target) {
@@ -234,14 +234,14 @@ export function gamePage({ model, route, tokens }: Ctx): GamePage | null {
     return {
       ...page(
         target.code,
-        target.functions.filter((fn) => fn.kind === "game"),
+        target.functions.filter((fn) => fn.type === "game"),
         MAP.imageLine(target.code.exact, target.code.functions, target.code.bytes),
         [target],
       ),
       title: target.name,
       crumbs: [home, {
         label: target.groupLabel,
-        to: { view: { kind: "part", key: target.group } },
+        to: { view: { type: "part", key: target.group } },
       }, { label: target.name, to: {} }],
       note: "",
       tree: gameImageTree(target, tokens, true),
@@ -299,7 +299,7 @@ export function searchTable({ model, route, limit }: Ctx): Views["table"] {
         [{ text: bytes(fn.bytes) }],
         [{
           text: model.targetById.get(fn.target)?.name ?? "",
-          to: gameMapRoute({ kind: "image", id: fn.target }),
+          to: gameMapRoute({ type: "image", id: fn.target }),
         }],
         [{ text: fn.addr || "-", code: true }],
       ],
