@@ -21,7 +21,7 @@ No game data belongs in the repository.
 ## Submit a change
 
 1. Create a branch and keep the change focused.
-2. Run the gate: `make check` (format check, type check, license gate, tests). CI runs the same
+2. Run the gate: `npm run check` (format check, type check, license gate, build, tests). CI runs the same
    checks and builds the site.
 3. Write the commit subject as `type(scope): subject`, for example `fix(page): label the match bar`.
 4. Open a pull request. Describe the behavior and the checks you ran.

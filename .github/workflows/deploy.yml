@@ -66,15 +66,8 @@ jobs:
       - uses: dprint/check@371a959e3c77f34a76a03d2c50df2e3f2302d016 # v2.6
         with:
           cache: true
-      - name: Type check
-        run: npm run lint
-      - name: Check dependency licences
-        run: npm run licenses
-      # The build copies data/report.json into site/ and renders the pictures from it.
-      - name: Build the page and the pictures
-        run: npm run build
-      - name: Test the model and the built site
-        run: npm test
+      # dprint, tsc, licences, the build (which copies data/report.json into site/) and the tests.
+      - run: npm run check
       - name: Check the site names only public projects
         run: |
           bad=$(grep -rhoE 'github\.com/raulcorreia7/[A-Za-z0-9._-]+' site data/report.json \
