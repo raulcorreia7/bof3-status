@@ -16,11 +16,10 @@ No game data is included. This is a fan project, not affiliated with or endorsed
 
 ## Requirements
 
-| Tool                                                       | Version        | Install                                                                   |
-| ---------------------------------------------------------- | -------------- | ------------------------------------------------------------------------- |
-| Git                                                        | any            | Your package manager                                                      |
-| [Node.js](https://nodejs.org/en/download) with npm         | 22 or later    | The official installer or your package manager                            |
-| [dprint](https://github.com/dprint/dprint/releases/latest) | latest release | Download the standalone executable onto `PATH`; needed by `npm run check` |
+| Tool                                               | Version              | Install                                        |
+| -------------------------------------------------- | -------------------- | ---------------------------------------------- |
+| Git                                                | any                  | Your package manager                           |
+| [Node.js](https://nodejs.org/en/download) with npm | 24 (`.node-version`) | The official installer or your package manager |
 
 No game data or disc is needed.
 
