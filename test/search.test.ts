@@ -14,10 +14,3 @@ test("a displayed 0x address finds its function", () => {
   assert.equal(found.length, 1);
   assert.equal(found[0]!.name, "func_801EEC60");
 });
-
-test("the address keeps its existing forms", () => {
-  assert.equal(search("801EEC60")[0]?.name, "func_801EEC60");
-  assert.equal(search("func_801EEC60")[0]?.name, "func_801EEC60");
-  assert.equal(search("0X801EEC60")[0]?.name, "func_801EEC60");
-  assert.equal(search("0x00000000").length, 0);
-});

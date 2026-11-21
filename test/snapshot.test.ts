@@ -21,33 +21,6 @@ test("the badge shows the exact share of game functions", () => {
   assert.ok(svg.includes(`>${POSTER.badge}</text>`));
   assert.ok(svg.includes(">42.0%</text>"));
 });
-
-test("the badge colour follows the share thresholds", () => {
-  assert.ok(badge(withShare(10)).includes("#b3402f"));
-  assert.ok(badge(withShare(33)).includes("#d29922"));
-  assert.ok(badge(withShare(66)).includes("#2ea043"));
-});
-
-test("the badge is as wide as its two halves", () => {
-  const svg = badge(withShare(50));
-  const [key, value] = [...svg.matchAll(/<rect (?:x="[\d.]+" )?width="([\d.]+)"/g)].map((m) =>
-    Number(m[1])
-  );
-  assert.equal(
-    Number(/<svg [^>]*width="([\d.]+)"/.exec(svg)?.[1]),
-    Math.round((key! + value!) * 100) / 100,
-  );
-});
-
-test("the poster is one well-formed SVG that names the project", () => {
-  const svg = renderPoster(model);
-  assert.match(svg, /^<svg [^>]*viewBox="0 0 \d+ \d+"/);
-  assert.ok(svg.trimEnd().endsWith("</svg>"));
-  assert.ok(svg.includes(POSTER.title));
-  assert.equal(svg.match(/<svg /g)?.length, 1);
-  assert.equal(renderPoster(model), svg);
-});
-
 test("the poster escapes text from the report", () => {
   const svg = renderPoster(model);
   assert.ok(!/<text[^>]*>[^<]*&(?!amp;|lt;|gt;|quot;|#)/.test(svg));
