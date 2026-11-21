@@ -1,9 +1,7 @@
 # Contributing
 
-Issues and pull requests are welcome. All contributions follow the
-[code of conduct](CODE_OF_CONDUCT.md). Ask questions in
-[Discussions](https://github.com/raulcorreia7/bof3-status/discussions). `AGENTS.md` is optional
-guidance for coding agents.
+Issues and pull requests are welcome under the [code of conduct](CODE_OF_CONDUCT.md). Ask questions in
+[Discussions](https://github.com/raulcorreia7/bof3-status/discussions).
 
 ## Set up
 

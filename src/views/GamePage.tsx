@@ -1,7 +1,3 @@
-// A part of the game or an image: its counts, then its functions as a treemap and a list.
-// ECharts draws every function on canvas; the list beside it holds the same functions as links,
-// paged so a large part never creates one DOM node per function.
-
 import {
   type Accessor,
   createEffect,
@@ -26,7 +22,6 @@ import { Jump, Meter, StatusChip, StatusKey } from "./ui.tsx";
 
 export function GamePageView(props: { data: Accessor<GamePage> }) {
   let heading: HTMLHeadingElement | undefined;
-  // A new page takes the focus to its heading, as a page load would.
   createEffect(on(() => props.data().title, () => heading?.focus({ preventScroll: true })));
   return (
     <section class="mt-6" aria-labelledby="page-title">
@@ -177,7 +172,6 @@ function Functions(props: { data: Accessor<GamePage>; tree: Accessor<MapNode> })
 
 function Canvas(props: { tree: Accessor<MapNode>; label: string }) {
   const page = usePage();
-  // Honour the system setting, including a change made while the page is open.
   const [calm, setCalm] = createSignal(
     window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
@@ -187,7 +181,6 @@ function Canvas(props: { tree: Accessor<MapNode>; label: string }) {
     query.addEventListener("change", update);
     onCleanup(() => query.removeEventListener("change", update));
   });
-  // Keep the option object stable when a route change (an open function) leaves the map unchanged.
   let built: { view: MapNode; tokens: Tokens; option: ChartOption } | undefined;
   const option = createMemo(() => {
     const view = props.tree();

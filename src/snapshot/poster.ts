@@ -1,8 +1,3 @@
-// progress.svg: the whole status board as one picture. render/snapshot.ts turns it into progress.png.
-//
-// The cards, the parts of the game, the SDK tiles and the bars are drawn here as SVG strings;
-// everything comes from the objdiff report the page reads.
-
 import { escapeText, percent, round } from "../model/format.ts";
 import { codeCounts, STATUS, STATUSES } from "../model/status.ts";
 import { textWidth } from "../model/text.ts";
@@ -16,7 +11,6 @@ const MARGIN = 24;
 const GAP = 20;
 const GAME_WIDTH = 1020;
 const SIDE_WIDTH = WIDTH - 2 * MARGIN - GAME_WIDTH - GAP;
-// The SDK panel is drawn at this multiple of the game tile scale so its libraries stay readable.
 const SDK_SCALE = 2;
 
 interface Drawn {
@@ -27,7 +21,6 @@ interface Drawn {
 const sdkBlocks = (model: Model): Block[] =>
   model.libraries.map((lib) => ({ name: lib.name, rows: sorted(lib.functions) }));
 
-// The headline, in the order the numbers matter: game functions, their size, the fuzzy match.
 function cards(model: Model, y: number): Drawn {
   const game = model.code;
   const items: [string, string, string, string][] = [
@@ -59,7 +52,6 @@ function cards(model: Model, y: number): Drawn {
   return { svg, bottom: y + height };
 }
 
-// The game status key, one row per status with its function count.
 function legend(model: Model, x: number, y: number): Drawn {
   const { code } = model;
   const rows: [keyof typeof C.status, string][] = [
@@ -77,7 +69,6 @@ function legend(model: Model, x: number, y: number): Drawn {
   return { svg, bottom: y + 40 + rows.length * 38 };
 }
 
-/** One bar split by status, by function count. */
 const codeBar = (x: number, y: number, width: number, height: number, code: Code): string =>
   bar(
     x,
@@ -88,14 +79,11 @@ const codeBar = (x: number, y: number, width: number, height: number, code: Code
     code.functions,
   );
 
-// Image rows: name, a bar as long as the image's share of the group's biggest, and its count.
 const ROW = 20;
 const ROW_COLUMNS = 3;
-// Image tiles: one small square per image, split by status; the page names each one.
 const TILE = 18;
 const TILE_GAP = 3;
 
-// Game code by part of the game: per group a heading, its bar, then its images.
 function domainPanel(model: Model, x: number, y: number, width: number): Drawn {
   let svg = text(x, y, MAP.heading, 24, C.ink);
   let top = y + 44;
@@ -120,7 +108,6 @@ function domainPanel(model: Model, x: number, y: number, width: number): Drawn {
       images.forEach((target, index) => {
         const tx = x + (index % cols) * (TILE + TILE_GAP);
         const ty = top + Math.floor(index / cols) * (TILE + TILE_GAP);
-        // A tile fills from the bottom: rebuilt, then draft, over the not-started track.
         let fill = ty + TILE;
         svg += rect(tx, ty, TILE, TILE, C.status.open, `<title>${escapeText(target.name)}</title>`);
         for (const [key, count] of codeCounts(target.code).filter(([key]) => key !== "open")) {
@@ -132,7 +119,6 @@ function domainPanel(model: Model, x: number, y: number, width: number): Drawn {
       top += Math.ceil(images.length / cols) * (TILE + TILE_GAP) + 16;
     } else {
       const columnWidth = (width - (ROW_COLUMNS - 1) * GAP) / ROW_COLUMNS;
-      // The column fits the longest name: a file name is never cut.
       const nameWidth = Math.max(...images.map((target) => textWidth(target.name, 12))) + 10;
       const countWidth = 70;
       const barRoom = columnWidth - nameWidth - countWidth - 12;
@@ -164,12 +150,10 @@ function domainPanel(model: Model, x: number, y: number, width: number): Drawn {
   return { svg, bottom: top - 16 };
 }
 
-// Library panel: per PsyQ library, its units by kind and the versions it links from.
 function libraryPanel(model: Model, x: number, y: number, width: number): Drawn {
   const libs = model.libraries.filter((lib) => lib.count > 2);
   let svg = text(x, y, POSTER.libraries, 24, C.ink);
   const peak = Math.max(...libs.map((lib) => weightOf(lib.functions)), 1);
-  // The column fits the longest name, so a bar never runs under it.
   const nameWidth = Math.max(
     ...libs.map((lib) => textWidth(lib.name === "assembly" ? SDK.assemblyLibrary : lib.name, 14)),
   ) + 12;
@@ -216,7 +200,6 @@ function libraryPanel(model: Model, x: number, y: number, width: number): Drawn 
   return { svg, bottom: y + 40 + libs.length * 36 + 22 };
 }
 
-// Quality row: the counters the report proves.
 function qualityRow(model: Model, y: number): Drawn {
   let svg = text(MARGIN, y, POSTER.qualityHeading, 24, C.ink);
   const width = (WIDTH - 2 * MARGIN - 4 * GAP) / 5;
@@ -231,7 +214,6 @@ function qualityRow(model: Model, y: number): Drawn {
   return { svg, bottom: y + 40 + 70 };
 }
 
-/** The status board as one SVG string. */
 export function renderPoster(model: Model): string {
   let svg = text(MARGIN, MARGIN - 4, POSTER.title, 34, C.ink, { weight: "bold" });
   svg += text(MARGIN, MARGIN + 38, POSTER.subtitle, 15, C.mute);

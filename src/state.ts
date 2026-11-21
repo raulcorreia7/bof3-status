@@ -1,6 +1,3 @@
-// The page state in one place: the route (kept in the URL hash, so every view is a link), the
-// theme and how many table rows are shown. Views read it through usePage().
-
 import {
   createContext,
   createEffect,
@@ -27,15 +24,10 @@ import type { Model } from "./types.ts";
 import { scrollToSection } from "./views/scroll.ts";
 import type { Ctx } from "./viewtypes.ts";
 
-/**
- * Change part of the route. `replace` edits the current history entry (typing, toggles). A new
- * page starts at the top, or at `section` of the home page when one is named.
- */
 type Navigate = (patch: Partial<Route>, replace?: boolean, section?: string) => void;
 
 interface Page extends Ctx {
   go: Navigate;
-  /** The hash of the current route with `patch` applied, for a link's href. */
   href: (patch: Partial<Route>, section?: string) => string;
   scheme: Scheme;
   mode: Mode;
@@ -53,7 +45,6 @@ export function usePage(): Page {
 }
 
 export function createPage(model: Model): Page {
-  // Route ---------------------------------------------------------------------------------
   const routeFromLocation = () => {
     const current = window.location.hash;
     const next = parseHash(current);
@@ -70,7 +61,6 @@ export function createPage(model: Model): Page {
   const sync = () => {
     const next = routeFromLocation();
     setRoute(reconcile(next));
-    // A section hash or a search query restores the reader's place after Back or Forward.
     const section = sectionOfHash(window.location.hash) ?? (next.q ? "find" : null);
     if (section) requestAnimationFrame(() => scrollToSection(section, false));
   };
@@ -86,7 +76,6 @@ export function createPage(model: Model): Page {
     // A copy: the store adopts the objects it is given and later changes them in place, so a
     // shared constant such as HOME.view must never reach it.
     const next = structuredClone({ ...current, ...patch });
-    // A section is a home page view; opening one closes the file panel, which is another page state.
     if (section && next.view.kind === "home") next.fn = null;
     const newPage = pagePath(next.view) !== pagePath(current.view);
     const hash = section && next.view.kind === "home"
@@ -110,7 +99,6 @@ export function createPage(model: Model): Page {
     return hash || "#";
   };
 
-  // Theme ---------------------------------------------------------------------------------
   const [mode, setModeSignal] = createSignal<Mode>(storedMode());
   const [applied, setApplied] = createSignal(applyMode(mode()));
   createEffect(() => {
@@ -123,7 +111,6 @@ export function createPage(model: Model): Page {
     setModeSignal(next);
   };
 
-  // Search table: rows shown, back to one step when the search changes -------------------
   const filterKey = createMemo(() =>
     [route.q, route.st, route.part, route.image, route.sort, route.dir].join("|")
   );

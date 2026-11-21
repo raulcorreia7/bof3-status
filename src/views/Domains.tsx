@@ -1,7 +1,3 @@
-// Game code by part of the game: one block per group with its heading, its
-// bar and its images, as labelled bars (few images) or a grid of tiles (many near-identical
-// overlays). Plain DOM, one element per image, so every name is real text.
-
 import { type Accessor, For, Show } from "solid-js";
 import type { Views } from "../viewtypes.ts";
 import { BarParts, Jump, Meter } from "./ui.tsx";
@@ -30,7 +26,6 @@ function GroupBlock(props: { group: Group }) {
           <ul class="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 text-sm sm:grid-cols-[minmax(7rem,13rem)_1fr_auto] sm:gap-y-1.5">
             <For each={props.group.images}>
               {(image) => (
-                // On a phone the name and the numbers share a line and the bar goes under them.
                 <li class="col-span-full grid grid-cols-subgrid items-center gap-y-1">
                   <Jump to={image.to} class="break-words" title={image.id}>
                     {image.label}

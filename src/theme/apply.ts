@@ -1,6 +1,3 @@
-// Theme selection: automatic (follow the system), light or dark. The choice is kept in
-// localStorage when the browser allows it; the page works without.
-
 import { cssVars, type Scheme, type Tokens, tokensFor } from "./tokens.ts";
 
 export type Mode = "auto" | "light" | "dark";
@@ -29,7 +26,6 @@ const schemeOf = (
   mode: Mode,
 ): Scheme => (mode === "auto" ? (dark().matches ? "dark" : "light") : mode);
 
-/** Write the tokens of the mode's scheme to the page and return them. */
 export function applyMode(mode: Mode): { scheme: Scheme; tokens: Tokens } {
   const scheme = schemeOf(mode);
   const tokens = tokensFor(scheme);
@@ -40,7 +36,6 @@ export function applyMode(mode: Mode): { scheme: Scheme; tokens: Tokens } {
   return { scheme, tokens };
 }
 
-/** Call `listener` when the system scheme changes. */
 export function watchSystemScheme(listener: () => void): () => void {
   const query = dark();
   query.addEventListener("change", listener);

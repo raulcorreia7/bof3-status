@@ -1,5 +1,3 @@
-// The simple views: cards, meters, text, search and tables.
-
 import { type Accessor, createSignal, For, onCleanup, Show } from "solid-js";
 import type { SortKey } from "../model/route.ts";
 import { usePage } from "../state.ts";
@@ -7,7 +5,6 @@ import { BROWSER } from "../strings.ts";
 import type { Views } from "../viewtypes.ts";
 import { Meter, Parts, StatusKey } from "./ui.tsx";
 
-/** How long the search box waits after the last key before the table filters. */
 const SEARCH_PAUSE_MS = 150;
 
 type Props<K extends keyof Views> = { data: Accessor<Views[K]> };
@@ -72,7 +69,6 @@ export function Text(props: Props<"text">) {
 
 export function Filters(props: Props<"filters">) {
   const page = usePage();
-  // The table follows the typing after a short pause, not at every key.
   let pause = 0;
   const search = (text: string) => {
     window.clearTimeout(pause);

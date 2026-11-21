@@ -1,9 +1,3 @@
-// Writes the files of the site that are not the page: progress.svg, progress.png and badge.svg.
-// Usage: node render/snapshot.ts [out-dir] [report-file]   (--help prints this line)
-//
-// The default report is data/report.json, the published numbers; Vite copies the same file to the
-// page (vite.config.ts). A publisher replaces data/report.json and commits it.
-
 import { Resvg } from "@resvg/resvg-js";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -13,7 +7,6 @@ import { badge } from "../src/snapshot/badge.ts";
 import { renderPoster } from "../src/snapshot/poster.ts";
 
 const PNG_WIDTH = 2400;
-// DejaVu Sans ships in the repository (render/fonts/LICENSE), so the picture never reads system fonts.
 const FONT_FILES = ["DejaVuSans.ttf", "DejaVuSans-Bold.ttf"].map((name) =>
   fileURLToPath(new URL(`./fonts/${name}`, import.meta.url))
 );

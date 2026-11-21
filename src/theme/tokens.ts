@@ -1,6 +1,3 @@
-// Colour tokens for the dark and the light theme. The page writes them to CSS custom properties
-// (theme/apply.ts), the charts read them from here, and the picture uses the dark set.
-
 import { statusProp } from "../model/status.ts";
 import type { Status } from "../types.ts";
 
@@ -12,7 +9,6 @@ export interface Tokens {
   mute: string;
   accent: string;
   track: string;
-  /** The SDK treemap cells: neutral, and no progress color. */
   sdk: string;
   status: Record<Status, string>;
 }
@@ -58,7 +54,6 @@ const LIGHT: Tokens = {
 export type Scheme = "dark" | "light";
 export const tokensFor = (scheme: Scheme): Tokens => (scheme === "dark" ? DARK : LIGHT);
 
-/** CSS custom properties for a token set: `--bg`, `--ink`, `--st-pure`. */
 export function cssVars(tokens: Tokens): Record<string, string> {
   const vars: Record<string, string> = {};
   for (const [key, value] of Object.entries(tokens)) {

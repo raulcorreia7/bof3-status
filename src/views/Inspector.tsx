@@ -1,5 +1,3 @@
-// The side panel: the details of the source file (unit) the route opens, beside any page.
-
 import { type Accessor, createEffect, createSignal, For, on, onCleanup, Show } from "solid-js";
 import { usePage } from "../state.ts";
 import { INSPECT } from "../strings.ts";
@@ -13,7 +11,6 @@ export function Inspector(props: { data: Accessor<Views["inspector"]> }) {
   const [copied, setCopied] = createSignal(false);
   const close = () => page.go({ fn: null, f: null }, true);
 
-  // Move focus into the panel when it opens and give it back when it closes.
   createEffect(
     on(
       () => props.data()?.title ?? "",

@@ -1,9 +1,3 @@
-// Fails when an installed package carries a licence that licenses.json does not allow.
-// Usage: node render/licenses.ts   (--help prints this line)
-//
-// licenses.json lists the allowed licences and, per package name, the one licence that package may
-// carry besides them. A package listed there passes at any version; a new licence on it fails.
-
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

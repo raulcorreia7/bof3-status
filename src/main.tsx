@@ -1,5 +1,3 @@
-// Entry point: fetch the published report.json, build the model and draw the page.
-
 import { render } from "solid-js/web";
 import { modelFromReport } from "./model/report.ts";
 import { HEAD, SITE } from "./strings.ts";
@@ -10,10 +8,8 @@ const host = document.getElementById("page");
 
 async function start(): Promise<void> {
   if (!host) return;
-  // Fetch the chart chunk while the report downloads; the charts mount as soon as it is in.
   void import("./charts/canvas.ts");
   try {
-    // Vite serves data/report.json in dev and copies it next to the page in the build.
     const response = await fetch("report.json");
     if (!response.ok) {
       throw new Error(`report.json: ${response.status} ${response.statusText}`.trim());

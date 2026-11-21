@@ -1,11 +1,6 @@
-// Every sentence and label the page and the picture show. Change wording here and nowhere else.
-// One name per thing: a status, a part of the game, an image and a measure keep the same words in
-// every card, key, list and tooltip.
-
 import { bytes, bytesOf, number, plural } from "./model/format.ts";
 import type { Quality, Status } from "./types.ts";
 
-// Status key -> legend text. The order of the keys is the order of the legend.
 export const STATUS_LABEL: Record<Status, string> = {
   pure: "rebuilt in C",
   nonmatching: "draft in C",
@@ -15,7 +10,6 @@ export const STATUS_LABEL: Record<Status, string> = {
   assembly: "SDK, split assembly",
 };
 
-// Group key -> heading and note (model/groups.ts names the groups).
 export const GROUP_LABEL: Record<string, string> = {
   main: "SLUS_004.22",
   logo: "LOGO.EXE",
@@ -227,7 +221,6 @@ export const FOOT = {
     "A fan project, not affiliated with or endorsed by Capcom. Breath of Fire is a Capcom trademark. No game data is included.",
 };
 
-// Picture only.
 export const POSTER = {
   title: "Breath of Fire III decompilation status",
   subtitle: "from the objdiff report",

@@ -1,11 +1,3 @@
-// Replaces data/report.json with a fresh objdiff report, compact, so a publish commit changes the
-// numbers and not the formatting.
-// Usage: node render/publish.ts [report-file]   (--help prints this line)
-//
-// The default is ../decomp/build/report.json: the file `meson compile -C build/meson report` writes in
-// bof3-decomp when it is checked out as decomp/ beside this folder (the bof3 workspace layout). The payload of the page is
-// this file served as-is (vite.config.ts), which is why it is stored compact.
-
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";

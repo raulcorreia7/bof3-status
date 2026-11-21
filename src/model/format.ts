@@ -1,5 +1,3 @@
-// Number and text formatting shared by the page, the picture and the badge.
-
 // One formatter for every call: `toLocaleString` builds a new one each time, which dominated the page load.
 const grouped = new Intl.NumberFormat("en-US");
 export const number = (value: number): string => grouped.format(value);
@@ -19,7 +17,6 @@ const inUnit = (value: number, unit: number): string => {
 };
 export const bytes = (value: number): string =>
   `${inUnit(value, unitOf(value))} ${UNITS[unitOf(value)]}`;
-// "731 KB of 3.0 MB": each side in its own unit, so a size reads the same in every view.
 export const bytesOf = (done: number, total: number): string => `${bytes(done)} of ${bytes(total)}`;
 export const round = (value: number): number => Math.round(value * 100) / 100;
 export const escapeText = (text: string | number): string =>
@@ -30,7 +27,6 @@ export const escapeText = (text: string | number): string =>
 
 const published = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 
-/** The freshness line: the repository, the short commit with its link, and the publish date. */
 export function sourceLine(
   source: { repository: string; commit: string; published: string } | null | undefined,
 ): { name: string; sha: string; href: string; iso: string; date: string } | null {

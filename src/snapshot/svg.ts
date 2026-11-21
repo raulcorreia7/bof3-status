@@ -1,12 +1,9 @@
-// SVG string primitives for the picture: no DOM, so the same code runs in Node.
-
 import { escapeText, round } from "../model/format.ts";
 import { DARK } from "../theme/tokens.ts";
 
 export const FONT = "'DejaVu Sans', Verdana, Arial, sans-serif";
 export const C = DARK;
 
-/** Text whose top edge is y; anchor is "start", "middle" or "end". */
 export function text(
   x: number,
   y: number,
@@ -49,7 +46,6 @@ export const frame = (x: number, y: number, w: number, h: number, color: string)
     round(h)
   }" fill="none" stroke="${color}" pointer-events="none"/>`;
 
-/** A horizontal bar of parts [value, color] against a total. */
 export function bar(
   x: number,
   y: number,
