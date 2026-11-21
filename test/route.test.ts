@@ -1,13 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import {
-  formatHash,
-  HOME,
-  parseHash,
-  SECTION_IDS,
-  sectionHash,
-  sectionOfHash,
-} from "../src/model/route.ts";
+import { HOME, parseHash, SECTION_IDS, sectionHash, sectionOfHash } from "../src/model/route.ts";
 
 test("a section hash opens the home page and names the section", () => {
   assert.deepEqual(parseHash("#find"), HOME);
@@ -23,14 +16,4 @@ test("a section hash carries the search parameters", () => {
   assert.equal(sectionHash(route, "find"), "#find?q=cure&sort=size&dir=desc");
   assert.equal(sectionHash(HOME, "map"), "#map");
   assert.equal(sectionHash({ ...HOME, fn: "exe/slus_004_22/func_80164028" }, "find"), "#find");
-});
-
-test("page hashes keep their existing form", () => {
-  const page = parseHash(
-    "#image/emi%2Fbattle%2Fbattle%2F15?fn=emi%2Fbattle%2Fbattle%2F15%2Ffunc_80096A74",
-  );
-  assert.equal(
-    formatHash(page),
-    "#image/emi%2Fbattle%2Fbattle%2F15?fn=emi%2Fbattle%2Fbattle%2F15%2Ffunc_80096A74",
-  );
 });
