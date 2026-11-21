@@ -194,84 +194,94 @@ export function overviewTree(
   height = 540,
   part?: string,
 ): MapNode {
-  if (by === "part") {
-    const children: MapNode[] = model.groups.map((group) => {
-      const scale = Math.sqrt(group.code.bytes / (model.game.bytes + model.sdk.bytes));
-      const images = overviewTree(model, tokens, "image", width * scale, height * scale, group.key)
-        .children!
-        .filter((node) => node.ref.kind === "image");
-      return {
-        id: `part:${group.key}`,
-        name: group.label,
-        value: total(images),
-        ref: { kind: "part" as const, id: group.key },
-        tip: group.note,
-        children: images,
-      };
-    }).filter((node) => node.value > 0);
-    const libraries: MapNode[] = model.libraries.filter((library) => library.bytes > 0).map((
-      library,
-    ) => ({
-      id: `library:${library.name}`,
-      name: library.name,
-      value: library.bytes,
-      ref: { kind: "sdk", id: library.name },
-      tip: escapeText(library.name),
-      itemStyle: { color: tokens.sdk },
-    }));
-    for (const library of libraries) {
-      const room = Math.sqrt(width * height * library.value / (model.game.bytes + model.sdk.bytes))
-        / 1.3;
-      library.label = {
-        show: room >= library.name.length * 6 + 10,
-        color: readableOn(tokens.sdk),
-      };
-    }
-    if (libraries.length) {
-      children.push({
-        id: "sdk:all",
-        name: SDK.group,
-        value: total(libraries),
-        ref: { kind: "sdk", id: "all" },
-        tip: SDK.group,
-        children: libraries,
-      });
-    }
+  return by === "part"
+    ? partOverview(model, tokens, width, height)
+    : imageOverview(model, tokens, width, height, part);
+}
+
+/** Mixes two `#rrggbb` colours; `amount` is the share of `color`. */
+function blend(base: string, color: string, amount: number): string {
+  const a = Number.parseInt(base.slice(1), 16);
+  const b = Number.parseInt(color.slice(1), 16);
+  const channel = (shift: number) =>
+    Math.round(((a >> shift) & 255) * (1 - amount) + ((b >> shift) & 255) * amount);
+  return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/** Whether a block of `value` bytes in `size` has room for a label of at least `min` pixels. */
+function hasRoom(width: number, height: number, value: number, size: number, min: number) {
+  return Math.sqrt(width * height * value / size) / 1.3 >= min;
+}
+
+function partOverview(model: Model, tokens: Tokens, width: number, height: number): MapNode {
+  const gameSize = model.game.bytes + model.sdk.bytes;
+  const children: MapNode[] = model.groups.map((group) => {
+    const scale = Math.sqrt(group.code.bytes / gameSize);
+    const images = imageOverview(model, tokens, width * scale, height * scale, group.key)
+      .children!
+      .filter((node) => node.ref.kind === "image");
     return {
-      id: "home:part",
-      name: "Game",
-      value: total(children),
-      ref: { kind: "home", id: "part" },
-      tip: "",
-      children,
+      id: `part:${group.key}`,
+      name: group.label,
+      value: total(images),
+      ref: { kind: "part" as const, id: group.key },
+      tip: group.note,
+      children: images,
     };
-  }
-  const targets = part ? model.targets.filter((target) => target.group === part) : model.targets;
-  const entries = targets.map((target) => ({
-    id: target.id,
-    name: target.name.replace(/\.EMI\b/i, ""),
-    code: target.code,
+  }).filter((node) => node.value > 0);
+  const libraries: MapNode[] = model.libraries.filter((library) => library.bytes > 0).map((
+    library,
+  ) => ({
+    id: `library:${library.name}`,
+    name: library.name,
+    value: library.bytes,
+    ref: { kind: "sdk", id: library.name },
+    tip: escapeText(library.name),
+    itemStyle: { color: tokens.sdk },
+    label: {
+      show: hasRoom(width, height, library.bytes, gameSize, library.name.length * 6 + 10),
+      color: readableOn(tokens.sdk),
+    },
   }));
-  const children: MapNode[] = entries.filter((entry) => entry.code.bytes > 0).map((entry) => {
-    const share = entry.code.exactBytes / entry.code.bytes;
-    const amount = share;
-    const blend = (base: string, color: string) => {
-      const a = Number.parseInt(base.slice(1), 16);
-      const b = Number.parseInt(color.slice(1), 16);
-      const channel = (shift: number) =>
-        Math.round(((a >> shift) & 255) * (1 - amount) + ((b >> shift) & 255) * amount);
-      return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`;
-    };
-    const name = `${entry.name}\n${percent(entry.code.exactBytes, entry.code.bytes, 1)}%`;
-    const fill = blend(tokens.status.open, tokens.status.pure);
+  if (libraries.length) {
+    children.push({
+      id: "sdk:all",
+      name: SDK.group,
+      value: total(libraries),
+      ref: { kind: "sdk", id: "all" },
+      tip: SDK.group,
+      children: libraries,
+    });
+  }
+  return {
+    id: "home:part",
+    name: "Game",
+    value: total(children),
+    ref: { kind: "home", id: "part" },
+    tip: "",
+    children,
+  };
+}
+
+function imageOverview(
+  model: Model,
+  tokens: Tokens,
+  width: number,
+  height: number,
+  part?: string,
+): MapNode {
+  const targets = part ? model.targets.filter((target) => target.group === part) : model.targets;
+  const children: MapNode[] = targets.filter((target) => target.code.bytes > 0).map((target) => {
+    const { code } = target;
+    const shown = target.name.replace(/\.EMI\b/i, "");
+    const rebuilt = percent(code.exactBytes, code.bytes, 1);
+    const fill = blend(tokens.status.open, tokens.status.pure, code.exactBytes / code.bytes);
     return {
-      id: `${by}:${entry.id}`,
-      name,
-      value: entry.code.bytes,
-      ref: { kind: by, id: entry.id },
-      tip: `${escapeText(entry.name)}<br>${
-        percent(entry.code.exactBytes, entry.code.bytes, 1)
-      }% rebuilt in C by size`,
+      id: `image:${target.id}`,
+      name: `${shown}\n${rebuilt}%`,
+      value: code.bytes,
+      ref: { kind: "image", id: target.id },
+      tip: `${escapeText(shown)}<br>${rebuilt}% rebuilt in C by size`,
       itemStyle: { color: fill },
       label: { color: readableOn(fill) },
     };
@@ -293,26 +303,21 @@ export function overviewTree(
       itemStyle: { color: tokens.sdk },
     });
   }
-  {
-    const size = total(children);
-    for (const node of children) {
-      const fill = typeof node.itemStyle?.color === "string" ? node.itemStyle.color : tokens.ink;
-      if (node.ref.kind === "image") {
-        const room = Math.sqrt(width * height * node.value / size) / 1.3;
-        node.label = {
-          show: room >= Math.max(60, node.name.split("\n")[0].length * 6 + 10),
-          color: readableOn(fill),
-        };
-      } else if (node.ref.kind === "sdk" && !node.children) {
-        node.label = { show: true, color: readableOn(fill) };
-      }
+  const size = total(children);
+  for (const node of children) {
+    const fill = typeof node.itemStyle?.color === "string" ? node.itemStyle.color : tokens.ink;
+    if (node.ref.kind === "image") {
+      const min = Math.max(60, node.name.split("\n")[0].length * 6 + 10);
+      node.label = { show: hasRoom(width, height, node.value, size, min), color: readableOn(fill) };
+    } else if (node.ref.kind === "sdk") {
+      node.label = { show: true, color: readableOn(fill) };
     }
   }
   return {
-    id: `home:${part ?? by}`,
+    id: `home:${part ?? "image"}`,
     name: "Game",
-    value: total(children),
-    ref: { kind: "home", id: by },
+    value: size,
+    ref: { kind: "home", id: "image" },
     tip: "",
     children,
   };
