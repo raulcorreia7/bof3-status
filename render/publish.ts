@@ -20,11 +20,12 @@ if (!existsSync(source)) {
   process.exit(1);
 }
 const target = fileURLToPath(new URL("../data/report.json", import.meta.url));
-const parsed = ReportSchema.safeParse(JSON.parse(readFileSync(source, "utf8")));
+const report: unknown = JSON.parse(readFileSync(source, "utf8"));
+const parsed = ReportSchema.safeParse(report);
 if (!parsed.success) {
   console.error(`${source} does not have the expected shape: ${prettifyError(parsed.error)}`);
   process.exit(1);
 }
-const json = JSON.stringify(parsed.data);
+const json = JSON.stringify(report);
 writeFileSync(target, json);
 console.log(`wrote data/report.json (${Buffer.byteLength(json)} bytes)`);
